@@ -30,8 +30,8 @@
 <meta property="og:site_name" content="知识库">
 <meta property="og:description" content="概述随着 docker 的诞生和容器技术应用与高速发展，长期一直在后台默默奉献一些 linux 特性如 namespace、cgroup 等技术走向前台。Namespace 是 linux 内核所提供的特性，用于隔离内核资源的方式，可以说没有隔离就不会存在容器。 Linux 官方描述” namespace 是对全局系统资源的一种封装隔离，使得处于不同 namespace 的进程拥有独立的全局系统资">
 <meta property="og:locale" content="zh_CN">
-<meta property="article:published_time" content="2023-01-16T02:14:54.914Z">
-<meta property="article:modified_time" content="2023-01-16T02:14:54.914Z">
+<meta property="article:published_time" content="2023-01-16T03:38:57.348Z">
+<meta property="article:modified_time" content="2023-01-16T03:38:57.348Z">
 <meta property="article:author" content="YuChang Yang">
 <meta property="article:tag" content="docker">
 <meta property="article:tag" content="runc">
@@ -63,7 +63,7 @@
 <body>
   
 
-<div class="l_cover post"><div class="cover"><div class="lazy img bg" data-bg="https://source.unsplash.com/2000x400/?new year"></div></div></div>
+<div class="l_cover post"><div class="cover"><div class="lazy img bg" data-bg="/assets/wiki/photos/newyear03.jpg"></div></div></div>
 
 
   <div class='l_body' id='start'>
@@ -97,7 +97,7 @@
       
 
 
-<div class="bread-nav fs12"><div id="breadcrumb"><a class="cap breadcrumb" href="/">主页</a><span class="sep"></span><a class="cap breadcrumb" href="/">文章</a><span class="sep"></span><a class="cap breadcrumb-link" href="/categories/%E6%8A%80%E6%9C%AF%E6%96%87%E6%A1%A3/">技术文档</a> <span class="sep"></span> <a class="cap breadcrumb-link" href="/categories/%E6%8A%80%E6%9C%AF%E6%96%87%E6%A1%A3/docker%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">docker源码分析</a> <span class="sep"></span> <a class="cap breadcrumb-link" href="/categories/%E6%8A%80%E6%9C%AF%E6%96%87%E6%A1%A3/docker%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/RunC/">RunC</a></div><div id="post-meta">发布于&nbsp;<time datetime="2023-01-16T02:14:54.914Z">2023-01-16</time></div></div>
+<div class="bread-nav fs12"><div id="breadcrumb"><a class="cap breadcrumb" href="/">主页</a><span class="sep"></span><a class="cap breadcrumb" href="/">文章</a><span class="sep"></span><a class="cap breadcrumb-link" href="/categories/%E6%8A%80%E6%9C%AF%E6%96%87%E6%A1%A3/">技术文档</a> <span class="sep"></span> <a class="cap breadcrumb-link" href="/categories/%E6%8A%80%E6%9C%AF%E6%96%87%E6%A1%A3/docker%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">docker源码分析</a> <span class="sep"></span> <a class="cap breadcrumb-link" href="/categories/%E6%8A%80%E6%9C%AF%E6%96%87%E6%A1%A3/docker%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/RunC/">RunC</a></div><div id="post-meta">发布于&nbsp;<time datetime="2023-01-16T03:38:57.348Z">2023-01-16</time></div></div>
 
 <article class='md-text content post'>
 <h1 class="article-title"><span>RunC 源码通读指南之 NameSpace</span></h1>
@@ -234,7 +234,7 @@
 
 </article>
 
-<div class="related-wrap reveal" id="read-next"><section class="body"><div class="item" id="prev"><div class="note">较新文章</div><a href="/2023/01/16/RunC_Cgroup/">RunC 源码通读指南之 Cgroup</a></div><div class="item" id="next"><div class="note">较早文章</div><a href="/2023/01/16/RunC_Run/">RunC 源码通读指南之 Run</a></div></section></div>
+<div class="related-wrap reveal" id="read-next"><section class="body"><div class="item" id="prev"><div class="note">较新文章</div><a href="/2023/01/16/OCI_Runtime_spec/">OCI Runtime spec 运行时规范</a></div><div class="item" id="next"><div class="note">较早文章</div><a href="/2023/01/16/RunC_Cgroup/">RunC 源码通读指南之 Cgroup</a></div></section></div>
 
 
 
@@ -255,7 +255,7 @@
 
 
       
-<footer class="page-footer reveal fs12"><hr><div class="text"><p>个人技术分享 |  经验总结 |  技术实践  |  心情<br>XiaoYang   <a href="mailto:&#115;&#x75;&#112;&#101;&#114;&#115;&#x70;&#106;&#106;&#64;&#x31;&#54;&#x33;&#46;&#x63;&#111;&#109;">&#115;&#x75;&#112;&#101;&#114;&#115;&#x70;&#106;&#106;&#64;&#x31;&#54;&#x33;&#46;&#x63;&#111;&#109;</a>          </p>
+<footer class="page-footer reveal fs12"><hr><div class="text"><p>个人技术分享 |  经验总结 |  技术实践  |  心情<br>XiaoYang   <a href="mailto:&#115;&#117;&#112;&#x65;&#x72;&#x73;&#112;&#x6a;&#106;&#64;&#x31;&#x36;&#51;&#46;&#x63;&#x6f;&#109;">&#115;&#117;&#112;&#x65;&#x72;&#x73;&#112;&#x6a;&#106;&#64;&#x31;&#x36;&#51;&#46;&#x63;&#x6f;&#109;</a>          </p>
 </div></footer>
 
       <div class='float-panel mobile-only blur' style='display:none'>
