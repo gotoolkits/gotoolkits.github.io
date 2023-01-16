@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang='zh-CN'>
+
+<head>
+  <meta name="generator" content="Hexo 6.3.0">
+  <meta name="hexo-theme" content="https://github.com/xaoxuu/hexo-theme-stellar/tree/1.18.5">
+  <meta charset="utf-8">
+  
+
+  <meta http-equiv='x-dns-prefetch-control' content='on' />
+  <link rel='dns-prefetch' href='https://gcore.jsdelivr.net'>
+  <link rel="preconnect" href="https://gcore.jsdelivr.net" crossorigin>
+  <link rel='dns-prefetch' href='//unpkg.com'>
+
+  <meta name="renderer" content="webkit">
+  <meta name="force-rendering" content="webkit">
+  <meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1">
+  <meta name="HandheldFriendly" content="True" >
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="theme-color" content="#f8f8f8">
+  
+  <title>OCI 镜像格式规范 - 知识库</title>
+
+  
+    <meta name="description" content="概述参考： OCI 官网 OCI 镜像规范 OCI镜像规范定义一个镜像包含一个manifest、一个image index(可选)、一组文件系统layer和一个配置文件。 OCI 镜像规范的主要目的: 统一标准化容器镜像格式，让标准镜像能够在各容器软件下构建、传递及准备容器镜像运行。 Image 规范的高层组件包含:  Image Manifest 清单文件是组成一个容器 image 的组件描述文">
+<meta property="og:type" content="article">
+<meta property="og:title" content="OCI 镜像格式规范">
+<meta property="og:url" content="http://example.com/2023/01/16/OCI_image_spec/index.html">
+<meta property="og:site_name" content="知识库">
+<meta property="og:description" content="概述参考： OCI 官网 OCI 镜像规范 OCI镜像规范定义一个镜像包含一个manifest、一个image index(可选)、一组文件系统layer和一个配置文件。 OCI 镜像规范的主要目的: 统一标准化容器镜像格式，让标准镜像能够在各容器软件下构建、传递及准备容器镜像运行。 Image 规范的高层组件包含:  Image Manifest 清单文件是组成一个容器 image 的组件描述文">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://github.com/opencontainers/image-spec/raw/master/img/media-types.png">
+<meta property="article:published_time" content="2023-01-16T02:12:19.662Z">
+<meta property="article:modified_time" content="2023-01-16T02:12:19.662Z">
+<meta property="article:author" content="YuChang Yang">
+<meta property="article:tag" content="docker">
+<meta property="article:tag" content="containerd">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://github.com/opencontainers/image-spec/raw/master/img/media-types.png">
+  
+  
+
+  <!-- feed -->
+  
+
+  
+    
+<link rel="stylesheet" href="/css/main.css">
+
+  
+
+  
+    <link rel="shortcut icon" href="/assets/knowledge.png">
+  
+
+  
+
+  
+
+
+  
+</head>
+
+<body>
+  
+
+<div class="l_cover post"><div class="cover"><div class="lazy img bg" data-bg="https://source.unsplash.com/2000x400/?new year"></div></div></div>
+
+
+  <div class='l_body' id='start'>
+    <aside class='l_left' layout='post'>
+    
+
+  
+
+<header class="header"><div class="logo-wrap"><a class="avatar" href="/"><div class="bg" style="opacity:0;background-image:url(https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.4/avatar/round/rainbow64@3x.webp);"></div><img no-lazy class="avatar" src="/assets/logo.svg" onerror="javascript:this.classList.add('error');this.src='https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.4/image/2659360.svg';"></a><a class="title" href="/"><div class="main" ff="title">知识库</div><div class="sub normal cap">建立团队内部知识分享</div><div class="sub hover cap" style="opacity:0"> 统一团队问题管理机制</div></a></div>
+
+<nav class="menu dis-select"><a class="nav-item active" href="/">系统</a><a class="nav-item" href="/wiki/">桌面</a><a class="nav-item" href="/notes/">数据</a><a class="nav-item" href="/more/">开发</a></nav>
+</header>
+
+
+<div class="widgets">
+<widget class="widget-wrapper search"><div class="widget-body"><div class="search-wrapper" id="search"><form class="search-form"><input type="text" class="search-input" id="search-input" data-filter="/blog/" placeholder="文章搜索"><svg t="1670596976048" class="icon search-icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="2676" width="200" height="200"><path d="M938.2 832.6L723.8 618.1c-2.5-2.5-5.3-4.4-7.9-6.4 36.2-55.6 57.3-121.8 57.3-193.1C773.3 222.8 614.6 64 418.7 64S64 222.8 64 418.6c0 195.9 158.8 354.6 354.6 354.6 71.3 0 137.5-21.2 193.2-57.4 2 2.7 3.9 5.4 6.3 7.8L832.5 938c14.6 14.6 33.7 21.9 52.8 21.9 19.1 0 38.2-7.3 52.8-21.8 29.2-29.1 29.2-76.4 0.1-105.5M418.7 661.3C284.9 661.3 176 552.4 176 418.6 176 284.9 284.9 176 418.7 176c133.8 0 242.6 108.9 242.6 242.7 0 133.7-108.9 242.6-242.6 242.6" p-id="2677"></path></svg></form><div id="search-result"></div><div class="search-no-result">没有找到内容！</div></div></div></widget>
+
+
+<widget class="widget-wrapper toc single" id="data-toc"><div class="widget-header cap dis-select"><span class="name">OCI 镜像格式规范</span></div><div class="widget-body fs14"><div class="doc-tree active"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%A6%82%E8%BF%B0"><span class="toc-text">概述</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#OCI-Image-Manifest-%E9%95%9C%E5%83%8F%E6%B8%85%E5%8D%95%E6%A0%BC%E5%BC%8F%E8%A7%84%E8%8C%83"><span class="toc-text">OCI Image Manifest 镜像清单格式规范</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#OCI-Image-Index-%E9%95%9C%E5%83%8F%E7%B4%A2%E5%BC%95%E6%A0%BC%E5%BC%8F%E8%A7%84%E8%8C%83"><span class="toc-text">OCI Image Index 镜像索引格式规范</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#OCI-Image-Layout-%E9%95%9C%E5%83%8F%E5%B8%83%E5%B1%80%E8%A7%84%E8%8C%83"><span class="toc-text">OCI Image Layout 镜像布局规范</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Image-Layer-Filesystem-Changeset-%E9%95%9C%E5%83%8F%E5%B1%82%E8%A7%84%E8%8C%83"><span class="toc-text">Image Layer Filesystem Changeset 镜像层规范</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#OCI-Runtime-Filesystem-Bundle-%E8%BF%90%E8%A1%8C%E6%97%B6%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E5%8C%85"><span class="toc-text">OCI Runtime Filesystem Bundle 运行时文件系统包</span></a></li></ol></div></div></widget>
+
+
+
+
+</div>
+<footer class="footer dis-select"><div class="social-wrap"><a class="social" href="https://github.com/gotoolkits" target="_blank" rel="external nofollow noopener noreferrer"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/assets/github.svg" /></a><a class="social" href="https://mail.163.com" target="_blank" rel="external nofollow noopener noreferrer"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/assets/mail.svg" /></a><a class="social" href="https://www.jianshu.com/u/0611daf62bd3" target="_blank" rel="external nofollow noopener noreferrer"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/assets/datas.svg" /></a><a class="social" href="https://www.jianshu.com/u/0611daf62bd3" target="_blank" rel="external nofollow noopener noreferrer"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/assets/jianshu.svg" /></a></div></footer>
+
+    </aside>
+    <div class='l_main'>
+      
+
+      
+
+
+<div class="bread-nav fs12"><div id="breadcrumb"><a class="cap breadcrumb" href="/">主页</a><span class="sep"></span><a class="cap breadcrumb" href="/">文章</a><span class="sep"></span><a class="cap breadcrumb-link" href="/categories/%E6%8A%80%E6%9C%AF%E6%96%87%E6%A1%A3/">技术文档</a> <span class="sep"></span> <a class="cap breadcrumb-link" href="/categories/%E6%8A%80%E6%9C%AF%E6%96%87%E6%A1%A3/docker%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">docker源码分析</a> <span class="sep"></span> <a class="cap breadcrumb-link" href="/categories/%E6%8A%80%E6%9C%AF%E6%96%87%E6%A1%A3/docker%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/OCI/">OCI</a></div><div id="post-meta">发布于&nbsp;<time datetime="2023-01-16T02:12:19.662Z">2023-01-16</time></div></div>
+
+<article class='md-text content post'>
+<h1 class="article-title"><span>OCI 镜像格式规范</span></h1>
+<h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><p><em>参考</em>： <a target="_blank" rel="noopener" href="https://www.opencontainers.org/">OCI 官网</a> <a target="_blank" rel="noopener" href="https://github.com/opencontainers/image-spec">OCI 镜像规范</a></p>
+<p><code>OCI镜像规范定义一个镜像包含一个manifest、一个image index(可选)、一组文件系统layer和一个配置文件。</code></p>
+<p><strong>OCI 镜像规范的主要目的:</strong></p>
+<p>统一标准化容器镜像格式，让标准镜像能够在各容器软件下构建、传递及准备容器镜像运行。</p>
+<p><strong>Image 规范的高层组件包含:</strong></p>
+<ul>
+<li><p>Image Manifest 清单文件是组成一个容器 image 的组件描述文档</p>
+</li>
+<li><p>Image Index (可选)  更高层的manifest文件，指向一组 manifests 和 descriptors 列表</p>
+</li>
+<li><p>Image Layout  镜像布局，表示一个镜像的内容布局</p>
+</li>
+<li><p>Filesystem Layer   描述一个容器文件系统的一个”变化集合”</p>
+</li>
+<li><p>Image Configuration  配置文件包含如应用参数、环境等信息</p>
+</li>
+<li><p>Conversion 如何解析的描述文档</p>
+</li>
+<li><p>Descriptor 描述了类型、元数据和内容寻址的格式描述文件</p>
+</li>
+<li><p>Signatures (可选 ) 签名是基于签名的图像内容的地址</p>
+</li>
+<li><p>Naming (可选 )  命名是联合基于DNS，可以授权</p>
+</li>
+</ul>
+<p><strong>OCI Media Type 文件类型:</strong></p>
+<table>
+<thead>
+<tr>
+<th align="left">Media Type</th>
+<th align="left">说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">application&#x2F;vnd.oci.descriptor.v1+json</td>
+<td align="left">Content Descriptor  内容描述文件</td>
+</tr>
+<tr>
+<td align="left">application&#x2F;vnd.oci.layout.header.v1+json</td>
+<td align="left">OCI Layout          布局描述文件</td>
+</tr>
+<tr>
+<td align="left">application&#x2F;vnd.oci.image.index.v1+json</td>
+<td align="left">Image Index  高层次的镜像元信息文件</td>
+</tr>
+<tr>
+<td align="left">application&#x2F;vnd.oci.image.manifest.v1+json</td>
+<td align="left">Image Manifest 镜像元信息文件</td>
+</tr>
+<tr>
+<td align="left">application&#x2F;vnd.oci.image.config.v1+json</td>
+<td align="left">Image Config        镜像配置文件</td>
+</tr>
+<tr>
+<td align="left">application&#x2F;vnd.oci.image.layer.v1.tar</td>
+<td align="left">Image Layer          镜像层文件</td>
+</tr>
+<tr>
+<td align="left">application&#x2F;vnd.oci.image.layer.v1.tar+gzip</td>
+<td align="left">Image Layer      镜像层文件gzip压缩</td>
+</tr>
+<tr>
+<td align="left">application&#x2F;vnd.oci.image.layer.nondistributable.v1.tar</td>
+<td align="left">Image Layer  非内容寻址管理</td>
+</tr>
+<tr>
+<td align="left">application&#x2F;vnd.oci.image.layer.nondistributable.v1.tar+gzip</td>
+<td align="left">Image Layer, gzip压缩 非内容寻址管理</td>
+</tr>
+</tbody></table>
+<p><em>类型关系图</em></p>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://github.com/opencontainers/image-spec/raw/master/img/media-types.png" alt="img"></p>
+<p><strong>OCI Content Descriptor</strong><br>OCI 镜像由几部分组成，每个组件都是存储在一个目录结构中。每个组件之间都是通过内容寻址的方式互相引用。<br>Content Descriptor 描述了一个目标内容的位置。Content Descriptor 包含：内容的类型、内容的标识符、内容的大小。Content Descriptor 必须通过嵌入到其他格式中使用。<br>Content Descriptor 属性</p>
+<ul>
+<li>mediaType string</li>
+<li>digest string</li>
+<li>size int64</li>
+<li>urls array of strings</li>
+<li>annotations string-string map</li>
+<li>data string 保留字段</li>
+</ul>
+<p>摘要和校验<br>digest属性是Descriptor的核心，扮演了内容的标识符的角色。digest使用了防碰撞的哈希算法唯一的标识了内容。如果标识符能够以安全的获取。那么就算内容通过了不安全的来源获取，也能独立计算出标识符对内容的正确性进行确认。</p>
+<p>digest的格式要求与示例：（sha256已经是一个广泛使用的Hash算法）</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">digest      := algorithm &quot;:&quot; hex</span><br><span class="line">algorithm   := /[a-z0-9_+.-]+/</span><br><span class="line">hex         := /[a-f0-9]+/</span><br><span class="line"></span><br><span class="line">sha256:6c3c624b58dbbcd3c0dd82b4c53f04194d1247c6eebdaab7c610cf7d66709b3b</span><br></pre></td></tr></table></figure>
+
+<p><em>Content Descriptor 示例</em><br>这个 Content Descriptor 描述了一个Manifest</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span></span><br><span class="line">  <span class="attr">&quot;mediaType&quot;</span><span class="punctuation">:</span> <span class="string">&quot;application/vnd.oci.image.manifest.v1+json&quot;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;size&quot;</span><span class="punctuation">:</span> <span class="number">7682</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;digest&quot;</span><span class="punctuation">:</span> <span class="string">&quot;sha256:5b0bcabd1ed22e9fb1310cf6c2dec7cdef19f0ad69efa1f392e94a4333501270&quot;</span></span><br><span class="line"><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="OCI-Image-Manifest-镜像清单格式规范"><a href="#OCI-Image-Manifest-镜像清单格式规范" class="headerlink" title="OCI Image Manifest 镜像清单格式规范"></a>OCI Image Manifest 镜像清单格式规范</h2><p><a target="_blank" rel="noopener" href="https://github.com/opencontainers/image-spec/blob/master/manifest.md">参考</a></p>
+<p>Manifest 的三大主要目标：</p>
+<ol>
+<li><p>内容可寻址（通过 hash 算法为镜像和它的组件生成唯一ID）</p>
+</li>
+<li><p>支持多种平台的架构镜像（由一个更上层的 manifest 说明包含的镜像 manifests 其具体平台的版本情况）</p>
+</li>
+<li><p>能被解析成为 OCI 运行时规范</p>
+</li>
+</ol>
+<p>image manifest 包括一个 Image Config 和 一组 Image Layers 。</p>
+<p> <code>application/vnd.oci.image.manifest.v1+json</code> 定义：</p>
+<table>
+<thead>
+<tr>
+<th align="center">字段名</th>
+<th align="center">类型</th>
+<th align="center">必须</th>
+<th align="center">说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">schemaVersion</td>
+<td align="center">int</td>
+<td align="center">必须</td>
+<td align="center">当前版本</td>
+</tr>
+<tr>
+<td align="center">mediaType</td>
+<td align="center">string</td>
+<td align="center">保留</td>
+<td align="center">用于标识当前文件是什么类型的</td>
+</tr>
+<tr>
+<td align="center">config</td>
+<td align="center">descriptor</td>
+<td align="center">必须</td>
+<td align="center">用于标识镜像的配置文件的位置<br />application&#x2F;vnd.oci.image.config.v1+json</td>
+</tr>
+<tr>
+<td align="center">layers</td>
+<td align="center">array of descriptor</td>
+<td align="center"></td>
+<td align="center">列表中的每一个成员都是一个镜像层，最底层的镜像在列表的第一项，其他各层按照堆叠顺序依次排列在后面。最终得到的文件系统应该和在一个空文件夹上堆叠各层得到的结果一样。用于堆叠的空文件夹的各种权限是不确定的。镜像层的mediaType，有比较多的选择： <br/>application&#x2F;vnd.oci.image.layer.v1.tar<br/>application&#x2F;vnd.oci.image.layer.v1.tar+gzip<br/>application&#x2F;vnd.oci.image.layer.nondistributable.v1.tar<br/>application&#x2F;vnd.oci.image.layer.nondistributable.v1.tar+gzip</td>
+</tr>
+<tr>
+<td align="center">annotations</td>
+<td align="center">string-string map</td>
+<td align="center"></td>
+<td align="center">注释</td>
+</tr>
+</tbody></table>
+<p><em>manifest 示例:</em></p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span></span><br><span class="line">  <span class="attr">&quot;schemaVersion&quot;</span><span class="punctuation">:</span> <span class="number">2</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;config&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">    <span class="attr">&quot;mediaType&quot;</span><span class="punctuation">:</span> <span class="string">&quot;application/vnd.oci.image.config.v1+json&quot;</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">&quot;size&quot;</span><span class="punctuation">:</span> <span class="number">7023</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">&quot;digest&quot;</span><span class="punctuation">:</span> <span class="string">&quot;sha256:b5b2b2c507a0944348e0303114d8d93aaaa081732b86451d9bce1f432a537bc7&quot;</span></span><br><span class="line">  <span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;layers&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span></span><br><span class="line">    <span class="punctuation">&#123;</span></span><br><span class="line">      <span class="attr">&quot;mediaType&quot;</span><span class="punctuation">:</span> <span class="string">&quot;application/vnd.oci.image.layer.v1.tar+gzip&quot;</span><span class="punctuation">,</span></span><br><span class="line">      <span class="attr">&quot;size&quot;</span><span class="punctuation">:</span> <span class="number">32654</span><span class="punctuation">,</span></span><br><span class="line">      <span class="attr">&quot;digest&quot;</span><span class="punctuation">:</span> <span class="string">&quot;sha256:e692418e4cbaf90ca69d05a66403747baa33ee08806650b51fab815ad7fc331f&quot;</span></span><br><span class="line">    <span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line">    <span class="punctuation">&#123;</span></span><br><span class="line">      <span class="attr">&quot;mediaType&quot;</span><span class="punctuation">:</span> <span class="string">&quot;application/vnd.oci.image.layer.v1.tar+gzip&quot;</span><span class="punctuation">,</span></span><br><span class="line">      <span class="attr">&quot;size&quot;</span><span class="punctuation">:</span> <span class="number">16724</span><span class="punctuation">,</span></span><br><span class="line">      <span class="attr">&quot;digest&quot;</span><span class="punctuation">:</span> <span class="string">&quot;sha256:3c3a4604a545cdc127456d94e421cd355bca5b528f4a9c1905b15da2eb4a4c6b&quot;</span></span><br><span class="line">    <span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line">    <span class="punctuation">&#123;</span></span><br><span class="line">      <span class="attr">&quot;mediaType&quot;</span><span class="punctuation">:</span> <span class="string">&quot;application/vnd.oci.image.layer.v1.tar+gzip&quot;</span><span class="punctuation">,</span></span><br><span class="line">      <span class="attr">&quot;size&quot;</span><span class="punctuation">:</span> <span class="number">73109</span><span class="punctuation">,</span></span><br><span class="line">      <span class="attr">&quot;digest&quot;</span><span class="punctuation">:</span> <span class="string">&quot;sha256:ec4b8955958665577945c89419d1af06b5f7636b4ac3da7f12184802ad867736&quot;</span></span><br><span class="line">    <span class="punctuation">&#125;</span></span><br><span class="line">  <span class="punctuation">]</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;annotations&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">    <span class="attr">&quot;com.example.key1&quot;</span><span class="punctuation">:</span> <span class="string">&quot;value1&quot;</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">&quot;com.example.key2&quot;</span><span class="punctuation">:</span> <span class="string">&quot;value2&quot;</span></span><br><span class="line">  <span class="punctuation">&#125;</span></span><br><span class="line"><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="OCI-Image-Index-镜像索引格式规范"><a href="#OCI-Image-Index-镜像索引格式规范" class="headerlink" title="OCI Image Index 镜像索引格式规范"></a>OCI Image Index 镜像索引格式规范</h2><p><a target="_blank" rel="noopener" href="https://github.com/opencontainers/image-spec/blob/master/image-index.md">参考</a></p>
+<p>Image Index是一个更高层次的Manifest，一般在一个镜像需要提供多个平台支持时使用。 </p>
+<p>MediaType：application&#x2F;vnd.oci.image.index.v1+json</p>
+<table>
+<thead>
+<tr>
+<th align="center">字段名</th>
+<th align="center">类型</th>
+<th align="center">必须</th>
+<th align="center">说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">schemaVersion</td>
+<td align="center">int</td>
+<td align="center">必须</td>
+<td align="center">必须填2（为了兼容老版本的Docker)</td>
+</tr>
+<tr>
+<td align="center">mediaType</td>
+<td align="center">string</td>
+<td align="center">保留</td>
+<td align="center">用于标识当前文件是什么类型的</td>
+</tr>
+<tr>
+<td align="center">manifests</td>
+<td align="center">array of objects</td>
+<td align="center">必须</td>
+<td align="center">给出了对于特定平台的Manifests列表</td>
+</tr>
+<tr>
+<td align="center">mediaType string Manifests</td>
+<td align="center">string</td>
+<td align="center"></td>
+<td align="center">application&#x2F;vnd.oci.image.manifest.v1+json</td>
+</tr>
+<tr>
+<td align="center">platform</td>
+<td align="center">object</td>
+<td align="center">可选</td>
+<td align="center">描述了Manifest中描述的镜像是运行<br>在哪一个指定的平台</td>
+</tr>
+<tr>
+<td align="center">architecture</td>
+<td align="center">string</td>
+<td align="center">必须</td>
+<td align="center">指定了CPU的架构类型</td>
+</tr>
+<tr>
+<td align="center">os</td>
+<td align="center">string</td>
+<td align="center">必须</td>
+<td align="center">指定了操作系统的类型</td>
+</tr>
+<tr>
+<td align="center">os.version</td>
+<td align="center">string</td>
+<td align="center">可选</td>
+<td align="center">指定操作系统的版本要求</td>
+</tr>
+<tr>
+<td align="center">os.features</td>
+<td align="center">array of strings</td>
+<td align="center">可选</td>
+<td align="center">指定了一些对于系统的特殊要求</td>
+</tr>
+<tr>
+<td align="center">variant</td>
+<td align="center">string</td>
+<td align="center">可选</td>
+<td align="center">指定了CPU的版本要求</td>
+</tr>
+<tr>
+<td align="center">features</td>
+<td align="center">array of strings</td>
+<td align="center">可选</td>
+<td align="center">指定了一些对于CPU指令集的特殊要求。<br>（比如sse4、aes）</td>
+</tr>
+<tr>
+<td align="center">annotations</td>
+<td align="center">string-string map</td>
+<td align="center"></td>
+<td align="center">注解</td>
+</tr>
+</tbody></table>
+<p><em>index 示例:</em></p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span></span><br><span class="line">  <span class="attr">&quot;schemaVersion&quot;</span><span class="punctuation">:</span> <span class="number">2</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;manifests&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span></span><br><span class="line">    <span class="punctuation">&#123;</span></span><br><span class="line">      <span class="attr">&quot;mediaType&quot;</span><span class="punctuation">:</span> <span class="string">&quot;application/vnd.oci.image.manifest.v1+json&quot;</span><span class="punctuation">,</span></span><br><span class="line">      <span class="attr">&quot;size&quot;</span><span class="punctuation">:</span> <span class="number">7143</span><span class="punctuation">,</span></span><br><span class="line">      <span class="attr">&quot;digest&quot;</span><span class="punctuation">:</span> <span class="string">&quot;sha256:e692418e4cbaf90ca69d05a66403747baa33ee08806650b51fab815ad7fc331f&quot;</span><span class="punctuation">,</span></span><br><span class="line">      <span class="attr">&quot;platform&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">        <span class="attr">&quot;architecture&quot;</span><span class="punctuation">:</span> <span class="string">&quot;ppc64le&quot;</span><span class="punctuation">,</span></span><br><span class="line">        <span class="attr">&quot;os&quot;</span><span class="punctuation">:</span> <span class="string">&quot;linux&quot;</span></span><br><span class="line">      <span class="punctuation">&#125;</span></span><br><span class="line">    <span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line">    <span class="punctuation">&#123;</span></span><br><span class="line">      <span class="attr">&quot;mediaType&quot;</span><span class="punctuation">:</span> <span class="string">&quot;application/vnd.oci.image.manifest.v1+json&quot;</span><span class="punctuation">,</span></span><br><span class="line">      <span class="attr">&quot;size&quot;</span><span class="punctuation">:</span> <span class="number">7682</span><span class="punctuation">,</span></span><br><span class="line">      <span class="attr">&quot;digest&quot;</span><span class="punctuation">:</span> <span class="string">&quot;sha256:5b0bcabd1ed22e9fb1310cf6c2dec7cdef19f0ad69efa1f392e94a4333501270&quot;</span><span class="punctuation">,</span></span><br><span class="line">      <span class="attr">&quot;platform&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">        <span class="attr">&quot;architecture&quot;</span><span class="punctuation">:</span> <span class="string">&quot;amd64&quot;</span><span class="punctuation">,</span></span><br><span class="line">        <span class="attr">&quot;os&quot;</span><span class="punctuation">:</span> <span class="string">&quot;linux&quot;</span><span class="punctuation">,</span></span><br><span class="line">        <span class="attr">&quot;os.features&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span></span><br><span class="line">          <span class="string">&quot;sse4&quot;</span></span><br><span class="line">        <span class="punctuation">]</span></span><br><span class="line">      <span class="punctuation">&#125;</span></span><br><span class="line">    <span class="punctuation">&#125;</span></span><br><span class="line">  <span class="punctuation">]</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;annotations&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">    <span class="attr">&quot;com.example.key1&quot;</span><span class="punctuation">:</span> <span class="string">&quot;value1&quot;</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">&quot;com.example.key2&quot;</span><span class="punctuation">:</span> <span class="string">&quot;value2&quot;</span></span><br><span class="line">  <span class="punctuation">&#125;</span></span><br><span class="line"><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="OCI-Image-Layout-镜像布局规范"><a href="#OCI-Image-Layout-镜像布局规范" class="headerlink" title="OCI Image Layout 镜像布局规范"></a>OCI Image Layout 镜像布局规范</h2><p><a target="_blank" rel="noopener" href="https://github.com/opencontainers/image-spec/blob/master/image-layout.md">参考</a></p>
+<p>OCI的镜像布局是指内容寻址(blobs)和位置寻址(refs)的目录结构。这个布局可以使用多种方式传输：归档文件如tar&#x2F;zip、共享文件系统环境如nfs、网络传输如http&#x2F;ftp&#x2F;rsync等</p>
+<p>镜像布局有以下部分组成：</p>
+<ol>
+<li>blobs directory  内容寻址的块文件，目录必须存在，但是可以为空。</li>
+<li>oci-layout file  文件必须存在、必须是JSON格式,文件中必须包含一个imageLayoutVersion字段文件中可以有其他字段作为扩展使用</li>
+<li>index.json file 文件必须存在、必须是JSON格式,文件中必须包含镜像Index的基本属性</li>
+</ol>
+<p><em>示例</em></p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">$ </span><span class="language-bash"><span class="built_in">cd</span> example.com/app/</span></span><br><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">find . -<span class="built_in">type</span> f</span></span><br><span class="line">./index.json</span><br><span class="line">./oci-layout</span><br><span class="line">./blobs/sha256/3588d02542238316759cbf24502f4344ffcc8a60c803870022f335d1390c13b4</span><br><span class="line">./blobs/sha256/4b0bc1c4050b03c95ef2a8e36e25feac42fd31283e8c30b3ee5df6b043155d3c</span><br><span class="line">./blobs/sha256/7968321274dc6b6171697c33df7815310468e694ac5be0ec03ff053bb135e768</span><br></pre></td></tr></table></figure>
+
+<p>blob文件名命名是通过内容计算的shasum</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ shasum -a 256 ./blobs/sha256/afff3924849e458c5ef237db5f89539274d5e609db5db935ed3959c90f1f2d51</span><br><span class="line">afff3924849e458c5ef237db5f89539274d5e609db5db935ed3959c90f1f2d51 ./blobs/sha256/afff3924849e458c5ef237db5f89539274d5e609db5db935ed3959c90f1f2d51</span><br></pre></td></tr></table></figure>
+
+<p><strong>Index.json 文件</strong></p>
+<p>index.json 文件相当于整个镜像的入口。从这个文件可以获取整个镜像依赖到的所有文件的信息。 每一个在manifests 字段中的 descriptor 都指向一个 application&#x2F;vnd.oci.image.index.v1+json 或 application&#x2F;vnd.oci.image.manifest.v1+json 类型的文件。</p>
+<p>一个通用的做法，org.opencontainers.image.ref.name 注解被认为是镜像 Tag 的含义。表示镜像的不同版本。</p>
+<p><em>index.json 示例</em></p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span></span><br><span class="line">  <span class="attr">&quot;schemaVersion&quot;</span><span class="punctuation">:</span> <span class="number">2</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;manifests&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span></span><br><span class="line">    <span class="punctuation">&#123;</span></span><br><span class="line">      <span class="attr">&quot;mediaType&quot;</span><span class="punctuation">:</span> <span class="string">&quot;application/vnd.oci.image.index.v1+json&quot;</span><span class="punctuation">,</span></span><br><span class="line">      <span class="attr">&quot;size&quot;</span><span class="punctuation">:</span> <span class="number">7143</span><span class="punctuation">,</span></span><br><span class="line">      <span class="attr">&quot;digest&quot;</span><span class="punctuation">:</span> <span class="string">&quot;sha256:0228f90e926ba6b96e4f39cf294b2586d38fbb5a1e385c05cd1ee40ea54fe7fd&quot;</span><span class="punctuation">,</span></span><br><span class="line">      <span class="attr">&quot;annotations&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">        <span class="attr">&quot;org.opencontainers.image.ref.name&quot;</span><span class="punctuation">:</span> <span class="string">&quot;stable-release&quot;</span></span><br><span class="line">      <span class="punctuation">&#125;</span></span><br><span class="line">    <span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line">    <span class="punctuation">&#123;</span></span><br><span class="line">      <span class="attr">&quot;mediaType&quot;</span><span class="punctuation">:</span> <span class="string">&quot;application/vnd.oci.image.manifest.v1+json&quot;</span><span class="punctuation">,</span></span><br><span class="line">      <span class="attr">&quot;size&quot;</span><span class="punctuation">:</span> <span class="number">7143</span><span class="punctuation">,</span></span><br><span class="line">      <span class="attr">&quot;digest&quot;</span><span class="punctuation">:</span> <span class="string">&quot;sha256:e692418e4cbaf90ca69d05a66403747baa33ee08806650b51fab815ad7fc331f&quot;</span><span class="punctuation">,</span></span><br><span class="line">      <span class="attr">&quot;platform&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">        <span class="attr">&quot;architecture&quot;</span><span class="punctuation">:</span> <span class="string">&quot;ppc64le&quot;</span><span class="punctuation">,</span></span><br><span class="line">        <span class="attr">&quot;os&quot;</span><span class="punctuation">:</span> <span class="string">&quot;linux&quot;</span></span><br><span class="line">      <span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line">      <span class="attr">&quot;annotations&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">        <span class="attr">&quot;org.opencontainers.image.ref.name&quot;</span><span class="punctuation">:</span> <span class="string">&quot;v1.0&quot;</span></span><br><span class="line">      <span class="punctuation">&#125;</span></span><br><span class="line">    <span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line">    <span class="punctuation">&#123;</span></span><br><span class="line">      <span class="attr">&quot;mediaType&quot;</span><span class="punctuation">:</span> <span class="string">&quot;application/xml&quot;</span><span class="punctuation">,</span></span><br><span class="line">      <span class="attr">&quot;size&quot;</span><span class="punctuation">:</span> <span class="number">7143</span><span class="punctuation">,</span></span><br><span class="line">      <span class="attr">&quot;digest&quot;</span><span class="punctuation">:</span> <span class="string">&quot;sha256:b3d63d132d21c3ff4c35a061adf23cf43da8ae054247e32faa95494d904a007e&quot;</span><span class="punctuation">,</span></span><br><span class="line">      <span class="attr">&quot;annotations&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">        <span class="attr">&quot;org.freedesktop.specifications.metainfo.version&quot;</span><span class="punctuation">:</span> <span class="string">&quot;1.0&quot;</span><span class="punctuation">,</span></span><br><span class="line">        <span class="attr">&quot;org.freedesktop.specifications.metainfo.type&quot;</span><span class="punctuation">:</span> <span class="string">&quot;AppStream&quot;</span></span><br><span class="line">      <span class="punctuation">&#125;</span></span><br><span class="line">    <span class="punctuation">&#125;</span></span><br><span class="line">  <span class="punctuation">]</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;annotations&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">    <span class="attr">&quot;com.example.index.revision&quot;</span><span class="punctuation">:</span> <span class="string">&quot;r124356&quot;</span></span><br><span class="line">  <span class="punctuation">&#125;</span></span><br><span class="line"><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
+
+<p><strong>OCI-layout 文件</strong></p>
+<p>在镜像规范中，这个文件特别简单，只有一个布局版本的字段。</p>
+<p><em>oci-layout 示例</em></p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span></span><br><span class="line">    <span class="attr">&quot;imageLayoutVersion&quot;</span><span class="punctuation">:</span> <span class="string">&quot;1.0.0&quot;</span></span><br><span class="line"><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
+
+<p><strong>Blobs 文件夹</strong></p>
+<p>blobs文件夹下的子文件夹是以Hash算法的名称来命名的，这些子文件夹下包含了真正的实体文件。<br>一个块被digest引用时（:，descriptor），这个块必须存放在blobs&#x2F;<alg>&#x2F;<hex>目录。<br>blobs文件夹下面可能会存放很多已经没有任何引用的块文件。<br>blobs文件夹下可以缺失一些被引用的块文件，只要被其他额外的块填满就可以了。</p>
+<p><em>Blobs 示例  Image Index</em></p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">$ cat ./blobs/sha256/<span class="number">9</span>b97579de92b1c195b85bb42a11011378ee549b02d7fe9c17bf2a6b35d5cb079 | jq</span><br><span class="line"><span class="punctuation">&#123;</span></span><br><span class="line">  <span class="attr">&quot;schemaVersion&quot;</span><span class="punctuation">:</span> <span class="number">2</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;manifests&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span></span><br><span class="line">    <span class="punctuation">&#123;</span></span><br><span class="line">      <span class="attr">&quot;mediaType&quot;</span><span class="punctuation">:</span> <span class="string">&quot;application/vnd.oci.image.manifest.v1+json&quot;</span><span class="punctuation">,</span></span><br><span class="line">      <span class="attr">&quot;size&quot;</span><span class="punctuation">:</span> <span class="number">7143</span><span class="punctuation">,</span></span><br><span class="line">      <span class="attr">&quot;digest&quot;</span><span class="punctuation">:</span> <span class="string">&quot;sha256:afff3924849e458c5ef237db5f89539274d5e609db5db935ed3959c90f1f2d51&quot;</span><span class="punctuation">,</span></span><br><span class="line">      <span class="attr">&quot;platform&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">        <span class="attr">&quot;architecture&quot;</span><span class="punctuation">:</span> <span class="string">&quot;ppc64le&quot;</span><span class="punctuation">,</span></span><br><span class="line">        <span class="attr">&quot;os&quot;</span><span class="punctuation">:</span> <span class="string">&quot;linux&quot;</span></span><br><span class="line">      <span class="punctuation">&#125;</span></span><br><span class="line">    <span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line">    ...</span><br></pre></td></tr></table></figure>
+
+<p><em>Blobs 示例 Image Manifest</em></p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">$ cat ./blobs/sha256/afff3924849e458c5ef237db5f89539274d5e609db5db935ed3959c90f1f2d51 | jq</span><br><span class="line"><span class="punctuation">&#123;</span></span><br><span class="line">  <span class="attr">&quot;schemaVersion&quot;</span><span class="punctuation">:</span> <span class="number">2</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;config&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">    <span class="attr">&quot;mediaType&quot;</span><span class="punctuation">:</span> <span class="string">&quot;application/vnd.oci.image.config.v1+json&quot;</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">&quot;size&quot;</span><span class="punctuation">:</span> <span class="number">7023</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">&quot;digest&quot;</span><span class="punctuation">:</span> <span class="string">&quot;sha256:5b0bcabd1ed22e9fb1310cf6c2dec7cdef19f0ad69efa1f392e94a4333501270&quot;</span></span><br><span class="line">  <span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;layers&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span></span><br><span class="line">    <span class="punctuation">&#123;</span></span><br><span class="line">      <span class="attr">&quot;mediaType&quot;</span><span class="punctuation">:</span> <span class="string">&quot;application/vnd.oci.image.layer.v1.tar+gzip&quot;</span><span class="punctuation">,</span></span><br><span class="line">      <span class="attr">&quot;size&quot;</span><span class="punctuation">:</span> <span class="number">32654</span><span class="punctuation">,</span></span><br><span class="line">      <span class="attr">&quot;digest&quot;</span><span class="punctuation">:</span> <span class="string">&quot;sha256:e692418e4cbaf90ca69d05a66403747baa33ee08806650b51fab815ad7fc331f&quot;</span></span><br><span class="line">    <span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line">    ...</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p><em>Blobs 示例 Image Config</em></p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">$ cat ./blobs/sha256/<span class="number">5</span>b0bcabd1ed22e9fb1310cf6c2dec7cdef19f0ad69efa1f392e94a4333501270 | jq</span><br><span class="line"><span class="punctuation">&#123;</span></span><br><span class="line">  <span class="attr">&quot;architecture&quot;</span><span class="punctuation">:</span> <span class="string">&quot;amd64&quot;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;author&quot;</span><span class="punctuation">:</span> <span class="string">&quot;Alyssa P. Hacker &lt;alyspdev@example.com&gt;&quot;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;config&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">    <span class="attr">&quot;Hostname&quot;</span><span class="punctuation">:</span> <span class="string">&quot;8dfe43d80430&quot;</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">&quot;Domainname&quot;</span><span class="punctuation">:</span> <span class="string">&quot;&quot;</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">&quot;User&quot;</span><span class="punctuation">:</span> <span class="string">&quot;&quot;</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">&quot;AttachStdin&quot;</span><span class="punctuation">:</span> <span class="literal"><span class="keyword">false</span></span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">&quot;AttachStdout&quot;</span><span class="punctuation">:</span> <span class="literal"><span class="keyword">false</span></span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">&quot;AttachStderr&quot;</span><span class="punctuation">:</span> <span class="literal"><span class="keyword">false</span></span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">&quot;Tty&quot;</span><span class="punctuation">:</span> <span class="literal"><span class="keyword">false</span></span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">&quot;OpenStdin&quot;</span><span class="punctuation">:</span> <span class="literal"><span class="keyword">false</span></span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">&quot;StdinOnce&quot;</span><span class="punctuation">:</span> <span class="literal"><span class="keyword">false</span></span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">&quot;Env&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span></span><br><span class="line">      <span class="string">&quot;PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin&quot;</span></span><br><span class="line">    <span class="punctuation">]</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">&quot;Cmd&quot;</span><span class="punctuation">:</span> <span class="literal"><span class="keyword">null</span></span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">&quot;Image&quot;</span><span class="punctuation">:</span> <span class="string">&quot;sha256:6986ae504bbf843512d680cc959484452034965db15f75ee8bdd1b107f61500b&quot;</span><span class="punctuation">,</span></span><br><span class="line">    ...</span><br></pre></td></tr></table></figure>
+
+<p>Image Layer Blob</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ cat ./blobs/sha256/e692418e4cbaf90ca69d05a66403747baa33ee08806650b51fab815ad7fc331f</span><br><span class="line"><span class="punctuation">[</span>tar stream<span class="punctuation">]</span></span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="Image-Layer-Filesystem-Changeset-镜像层规范"><a href="#Image-Layer-Filesystem-Changeset-镜像层规范" class="headerlink" title="Image Layer Filesystem Changeset 镜像层规范"></a>Image Layer Filesystem Changeset 镜像层规范</h2><p><a target="_blank" rel="noopener" href="https://github.com/opencontainers/image-spec/blob/master/layer.md">参考</a></p>
+<p>如何序列化 文件系统 以及 文件系统的改变(如删除文件) 到一个 blob 文件称之为” layer “，由一个或多个layer层叠加构成一个完整的文件系统。</p>
+<p><strong>Image Filesystem Changeset文件系统改变集</strong></p>
+<p>每一个layer都会有对它相对于父layer增、删、改的文件的一个存档，使用诸如AUFS等联合挂载文件系统，可以将一系列的image layer以单一的文件系统的形式呈现出来。</p>
+<p><strong>Change type 文件系统改变类型</strong></p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Additions</span><br><span class="line">Modifications</span><br><span class="line">Removals</span><br></pre></td></tr></table></figure>
+
+<p><strong>创建 Image Filesystem Changeset</strong></p>
+<ol>
+<li><p>创建根文件系统</p>
+<p>根文件系统是基础或父 layer , 此处初始为空目录结构，使用唯一的目录名rootfs-c9d-v1</p>
+</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">rootfs-c9d-v1/</span><br></pre></td></tr></table></figure>
+
+<ol start="2">
+<li>创建初始文件与目录</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">rootfs-c9d-v1/</span><br><span class="line">    etc/</span><br><span class="line">        my-app-config</span><br><span class="line">    bin/</span><br><span class="line">        my-app-binary</span><br><span class="line">        my-app-tools</span><br></pre></td></tr></table></figure>
+
+<p>​     rootfs-c9d-v1 目录会被作为以下文件的打包存档的入口(tar)</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">./</span><br><span class="line">./etc/</span><br><span class="line">./etc/my-app-config</span><br><span class="line">./bin/</span><br><span class="line">./bin/my-app-binary</span><br><span class="line">./bin/my-app-tools</span><br></pre></td></tr></table></figure>
+
+<ol start="3">
+<li><p>复制或快照初始文件系统</p>
+<p>以前面的根文件系统复制或快照，创建一个新的目录和初始化文件系统，目录名为rootfs-c9d-v1.s1</p>
+</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">rootfs-c9d-v1.s1/</span><br><span class="line">    etc/</span><br><span class="line">        my-app-config</span><br><span class="line">    bin/</span><br><span class="line">        my-app-binary</span><br><span class="line">        my-app-tools</span><br></pre></td></tr></table></figure>
+
+<pre><code>   增加一个./etc/my-app.d目录包含default.cfg文件，删除存在的my-app-config文件。与此同时，改变./bin/my-app-tools二进制文件内容或属性。
+</code></pre>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">rootfs-c9d-v1.s1/</span><br><span class="line">    etc/</span><br><span class="line">        my-app.d/</span><br><span class="line">            default.cfg</span><br><span class="line">    bin/</span><br><span class="line">        my-app-binary</span><br><span class="line">        my-app-tools</span><br></pre></td></tr></table></figure>
+
+<ol start="4">
+<li><p>检测变化和表示变化项</p>
+<p>通过两个目录进行比较(“rootfs-c9d-v1” VS “rootfs-c9d-v1.s1”)，查询文件是否有被增加、修改、删除操作</p>
+</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">Added:      /etc/my-app.d/</span><br><span class="line">Added:      /etc/my-app.d/default.cfg</span><br><span class="line">Modified:   /bin/my-app-tools</span><br><span class="line">Deleted:    /etc/my-app-config</span><br></pre></td></tr></table></figure>
+
+<ol start="5">
+<li>创建 changeset 文件</li>
+</ol>
+<p>打包 tar 文件仅包含 changeset :</p>
+<ul>
+<li>增加与修改的文件和目录完整打包</li>
+<li>删除的文件或目录由whiteout文件(.wh.命名)来标识</li>
+</ul>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">./etc/my-app.d/</span><br><span class="line">./etc/my-app.d/default.cfg</span><br><span class="line">./bin/my-app-tools</span><br><span class="line">./etc/.wh.my-app-config</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="OCI-Runtime-Filesystem-Bundle-运行时文件系统包"><a href="#OCI-Runtime-Filesystem-Bundle-运行时文件系统包" class="headerlink" title="OCI Runtime Filesystem Bundle 运行时文件系统包"></a>OCI Runtime Filesystem Bundle 运行时文件系统包</h2><p><a target="_blank" rel="noopener" href="https://github.com/opencontainers/runtime-spec/blob/master/bundle.md">参考</a></p>
+<p>OCI Image 可通过镜像名称发现、下载、hash值来验证、签名受信以及解包成 OCI 运行时 Bundle。一个标准的容器 bundle 包含容器加载和运行所需的所有信息，其包含如下：</p>
+<ol>
+<li>config.json 容器配置数据文件，必须与文件系统同目录下，文件名必须为config.json</li>
+<li>root filesystem 容器 root 文件系统(启动的只读文件)，在 config.json 文件内有指定 root.path。</li>
+</ol>
+<p><strong>config.json 配置文件说明</strong></p>
+<p><em>config样例：</em></p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br><span class="line">176</span><br><span class="line">177</span><br><span class="line">178</span><br><span class="line">179</span><br><span class="line">180</span><br><span class="line">181</span><br><span class="line">182</span><br><span class="line">183</span><br><span class="line">184</span><br><span class="line">185</span><br><span class="line">186</span><br><span class="line">187</span><br><span class="line">188</span><br><span class="line">189</span><br><span class="line">190</span><br><span class="line">191</span><br><span class="line">192</span><br><span class="line">193</span><br><span class="line">194</span><br><span class="line">195</span><br><span class="line">196</span><br><span class="line">197</span><br><span class="line">198</span><br><span class="line">199</span><br><span class="line">200</span><br><span class="line">201</span><br><span class="line">202</span><br><span class="line">203</span><br><span class="line">204</span><br><span class="line">205</span><br><span class="line">206</span><br><span class="line">207</span><br><span class="line">208</span><br><span class="line">209</span><br><span class="line">210</span><br><span class="line">211</span><br><span class="line">212</span><br><span class="line">213</span><br><span class="line">214</span><br><span class="line">215</span><br><span class="line">216</span><br><span class="line">217</span><br><span class="line">218</span><br><span class="line">219</span><br><span class="line">220</span><br><span class="line">221</span><br><span class="line">222</span><br><span class="line">223</span><br><span class="line">224</span><br><span class="line">225</span><br><span class="line">226</span><br><span class="line">227</span><br><span class="line">228</span><br><span class="line">229</span><br><span class="line">230</span><br><span class="line">231</span><br><span class="line">232</span><br><span class="line">233</span><br><span class="line">234</span><br><span class="line">235</span><br><span class="line">236</span><br><span class="line">237</span><br><span class="line">238</span><br><span class="line">239</span><br><span class="line">240</span><br><span class="line">241</span><br><span class="line">242</span><br><span class="line">243</span><br><span class="line">244</span><br><span class="line">245</span><br><span class="line">246</span><br><span class="line">247</span><br><span class="line">248</span><br><span class="line">249</span><br><span class="line">250</span><br><span class="line">251</span><br><span class="line">252</span><br><span class="line">253</span><br><span class="line">254</span><br><span class="line">255</span><br><span class="line">256</span><br><span class="line">257</span><br><span class="line">258</span><br><span class="line">259</span><br><span class="line">260</span><br><span class="line">261</span><br><span class="line">262</span><br><span class="line">263</span><br><span class="line">264</span><br><span class="line">265</span><br><span class="line">266</span><br><span class="line">267</span><br><span class="line">268</span><br><span class="line">269</span><br><span class="line">270</span><br><span class="line">271</span><br><span class="line">272</span><br><span class="line">273</span><br><span class="line">274</span><br><span class="line">275</span><br><span class="line">276</span><br><span class="line">277</span><br><span class="line">278</span><br><span class="line">279</span><br><span class="line">280</span><br><span class="line">281</span><br><span class="line">282</span><br><span class="line">283</span><br><span class="line">284</span><br><span class="line">285</span><br><span class="line">286</span><br><span class="line">287</span><br><span class="line">288</span><br><span class="line">289</span><br><span class="line">290</span><br><span class="line">291</span><br><span class="line">292</span><br><span class="line">293</span><br><span class="line">294</span><br><span class="line">295</span><br><span class="line">296</span><br><span class="line">297</span><br><span class="line">298</span><br><span class="line">299</span><br><span class="line">300</span><br><span class="line">301</span><br><span class="line">302</span><br><span class="line">303</span><br><span class="line">304</span><br><span class="line">305</span><br><span class="line">306</span><br><span class="line">307</span><br><span class="line">308</span><br><span class="line">309</span><br><span class="line">310</span><br><span class="line">311</span><br><span class="line">312</span><br><span class="line">313</span><br><span class="line">314</span><br><span class="line">315</span><br><span class="line">316</span><br><span class="line">317</span><br><span class="line">318</span><br><span class="line">319</span><br><span class="line">320</span><br><span class="line">321</span><br><span class="line">322</span><br><span class="line">323</span><br><span class="line">324</span><br><span class="line">325</span><br><span class="line">326</span><br><span class="line">327</span><br><span class="line">328</span><br><span class="line">329</span><br><span class="line">330</span><br><span class="line">331</span><br><span class="line">332</span><br><span class="line">333</span><br><span class="line">334</span><br><span class="line">335</span><br><span class="line">336</span><br><span class="line">337</span><br><span class="line">338</span><br><span class="line">339</span><br><span class="line">340</span><br><span class="line">341</span><br><span class="line">342</span><br><span class="line">343</span><br><span class="line">344</span><br><span class="line">345</span><br><span class="line">346</span><br><span class="line">347</span><br><span class="line">348</span><br><span class="line">349</span><br><span class="line">350</span><br><span class="line">351</span><br><span class="line">352</span><br><span class="line">353</span><br><span class="line">354</span><br><span class="line">355</span><br><span class="line">356</span><br><span class="line">357</span><br><span class="line">358</span><br><span class="line">359</span><br><span class="line">360</span><br><span class="line">361</span><br><span class="line">362</span><br><span class="line">363</span><br><span class="line">364</span><br><span class="line">365</span><br><span class="line">366</span><br><span class="line">367</span><br><span class="line">368</span><br><span class="line">369</span><br><span class="line">370</span><br><span class="line">371</span><br><span class="line">372</span><br></pre></td><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span></span><br><span class="line">    <span class="attr">&quot;ociVersion&quot;</span><span class="punctuation">:</span> <span class="string">&quot;1.0.1&quot;</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">&quot;process&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">        <span class="attr">&quot;terminal&quot;</span><span class="punctuation">:</span> <span class="literal"><span class="keyword">true</span></span><span class="punctuation">,</span></span><br><span class="line">        <span class="attr">&quot;user&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">            <span class="attr">&quot;uid&quot;</span><span class="punctuation">:</span> <span class="number">1</span><span class="punctuation">,</span></span><br><span class="line">            <span class="attr">&quot;gid&quot;</span><span class="punctuation">:</span> <span class="number">1</span><span class="punctuation">,</span></span><br><span class="line">            <span class="attr">&quot;additionalGids&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span></span><br><span class="line">                <span class="number">5</span><span class="punctuation">,</span></span><br><span class="line">                <span class="number">6</span></span><br><span class="line">            <span class="punctuation">]</span></span><br><span class="line">        <span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line">        <span class="attr">&quot;args&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span></span><br><span class="line">            <span class="string">&quot;sh&quot;</span></span><br><span class="line">        <span class="punctuation">]</span><span class="punctuation">,</span></span><br><span class="line">        <span class="attr">&quot;env&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span></span><br><span class="line">            <span class="string">&quot;PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin&quot;</span><span class="punctuation">,</span></span><br><span class="line">            <span class="string">&quot;TERM=xterm&quot;</span></span><br><span class="line">        <span class="punctuation">]</span><span class="punctuation">,</span></span><br><span class="line">        <span class="attr">&quot;cwd&quot;</span><span class="punctuation">:</span> <span class="string">&quot;/&quot;</span><span class="punctuation">,</span></span><br><span class="line">        <span class="attr">&quot;capabilities&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">            <span class="attr">&quot;bounding&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span></span><br><span class="line">                <span class="string">&quot;CAP_AUDIT_WRITE&quot;</span><span class="punctuation">,</span></span><br><span class="line">                <span class="string">&quot;CAP_KILL&quot;</span><span class="punctuation">,</span></span><br><span class="line">                <span class="string">&quot;CAP_NET_BIND_SERVICE&quot;</span></span><br><span class="line">            <span class="punctuation">]</span><span class="punctuation">,</span></span><br><span class="line">            <span class="attr">&quot;permitted&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span></span><br><span class="line">                <span class="string">&quot;CAP_AUDIT_WRITE&quot;</span><span class="punctuation">,</span></span><br><span class="line">                <span class="string">&quot;CAP_KILL&quot;</span><span class="punctuation">,</span></span><br><span class="line">                <span class="string">&quot;CAP_NET_BIND_SERVICE&quot;</span></span><br><span class="line">            <span class="punctuation">]</span><span class="punctuation">,</span></span><br><span class="line">            <span class="attr">&quot;inheritable&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span></span><br><span class="line">                <span class="string">&quot;CAP_AUDIT_WRITE&quot;</span><span class="punctuation">,</span></span><br><span class="line">                <span class="string">&quot;CAP_KILL&quot;</span><span class="punctuation">,</span></span><br><span class="line">                <span class="string">&quot;CAP_NET_BIND_SERVICE&quot;</span></span><br><span class="line">            <span class="punctuation">]</span><span class="punctuation">,</span></span><br><span class="line">            <span class="attr">&quot;effective&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span></span><br><span class="line">                <span class="string">&quot;CAP_AUDIT_WRITE&quot;</span><span class="punctuation">,</span></span><br><span class="line">                <span class="string">&quot;CAP_KILL&quot;</span></span><br><span class="line">            <span class="punctuation">]</span><span class="punctuation">,</span></span><br><span class="line">            <span class="attr">&quot;ambient&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span></span><br><span class="line">                <span class="string">&quot;CAP_NET_BIND_SERVICE&quot;</span></span><br><span class="line">            <span class="punctuation">]</span></span><br><span class="line">        <span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line">        <span class="attr">&quot;rlimits&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span></span><br><span class="line">            <span class="punctuation">&#123;</span></span><br><span class="line">                <span class="attr">&quot;type&quot;</span><span class="punctuation">:</span> <span class="string">&quot;RLIMIT_CORE&quot;</span><span class="punctuation">,</span></span><br><span class="line">                <span class="attr">&quot;hard&quot;</span><span class="punctuation">:</span> <span class="number">1024</span><span class="punctuation">,</span></span><br><span class="line">                <span class="attr">&quot;soft&quot;</span><span class="punctuation">:</span> <span class="number">1024</span></span><br><span class="line">            <span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line">            <span class="punctuation">&#123;</span></span><br><span class="line">                <span class="attr">&quot;type&quot;</span><span class="punctuation">:</span> <span class="string">&quot;RLIMIT_NOFILE&quot;</span><span class="punctuation">,</span></span><br><span class="line">                <span class="attr">&quot;hard&quot;</span><span class="punctuation">:</span> <span class="number">1024</span><span class="punctuation">,</span></span><br><span class="line">                <span class="attr">&quot;soft&quot;</span><span class="punctuation">:</span> <span class="number">1024</span></span><br><span class="line">            <span class="punctuation">&#125;</span></span><br><span class="line">        <span class="punctuation">]</span><span class="punctuation">,</span></span><br><span class="line">        <span class="attr">&quot;apparmorProfile&quot;</span><span class="punctuation">:</span> <span class="string">&quot;acme_secure_profile&quot;</span><span class="punctuation">,</span></span><br><span class="line">        <span class="attr">&quot;oomScoreAdj&quot;</span><span class="punctuation">:</span> <span class="number">100</span><span class="punctuation">,</span></span><br><span class="line">        <span class="attr">&quot;selinuxLabel&quot;</span><span class="punctuation">:</span> <span class="string">&quot;system_u:system_r:svirt_lxc_net_t:s0:c124,c675&quot;</span><span class="punctuation">,</span></span><br><span class="line">        <span class="attr">&quot;noNewPrivileges&quot;</span><span class="punctuation">:</span> <span class="literal"><span class="keyword">true</span></span></span><br><span class="line">    <span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">&quot;root&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">        <span class="attr">&quot;path&quot;</span><span class="punctuation">:</span> <span class="string">&quot;rootfs&quot;</span><span class="punctuation">,</span></span><br><span class="line">        <span class="attr">&quot;readonly&quot;</span><span class="punctuation">:</span> <span class="literal"><span class="keyword">true</span></span></span><br><span class="line">    <span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">&quot;hostname&quot;</span><span class="punctuation">:</span> <span class="string">&quot;slartibartfast&quot;</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">&quot;mounts&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span></span><br><span class="line">        <span class="punctuation">&#123;</span></span><br><span class="line">            <span class="attr">&quot;destination&quot;</span><span class="punctuation">:</span> <span class="string">&quot;/proc&quot;</span><span class="punctuation">,</span></span><br><span class="line">            <span class="attr">&quot;type&quot;</span><span class="punctuation">:</span> <span class="string">&quot;proc&quot;</span><span class="punctuation">,</span></span><br><span class="line">            <span class="attr">&quot;source&quot;</span><span class="punctuation">:</span> <span class="string">&quot;proc&quot;</span></span><br><span class="line">        <span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line">        <span class="punctuation">&#123;</span></span><br><span class="line">            <span class="attr">&quot;destination&quot;</span><span class="punctuation">:</span> <span class="string">&quot;/dev&quot;</span><span class="punctuation">,</span></span><br><span class="line">            <span class="attr">&quot;type&quot;</span><span class="punctuation">:</span> <span class="string">&quot;tmpfs&quot;</span><span class="punctuation">,</span></span><br><span class="line">            <span class="attr">&quot;source&quot;</span><span class="punctuation">:</span> <span class="string">&quot;tmpfs&quot;</span><span class="punctuation">,</span></span><br><span class="line">            <span class="attr">&quot;options&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span></span><br><span class="line">                <span class="string">&quot;nosuid&quot;</span><span class="punctuation">,</span></span><br><span class="line">                <span class="string">&quot;strictatime&quot;</span><span class="punctuation">,</span></span><br><span class="line">                <span class="string">&quot;mode=755&quot;</span><span class="punctuation">,</span></span><br><span class="line">                <span class="string">&quot;size=65536k&quot;</span></span><br><span class="line">            <span class="punctuation">]</span></span><br><span class="line">        <span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line">        <span class="punctuation">&#123;</span></span><br><span class="line">            <span class="attr">&quot;destination&quot;</span><span class="punctuation">:</span> <span class="string">&quot;/dev/pts&quot;</span><span class="punctuation">,</span></span><br><span class="line">            <span class="attr">&quot;type&quot;</span><span class="punctuation">:</span> <span class="string">&quot;devpts&quot;</span><span class="punctuation">,</span></span><br><span class="line">            <span class="attr">&quot;source&quot;</span><span class="punctuation">:</span> <span class="string">&quot;devpts&quot;</span><span class="punctuation">,</span></span><br><span class="line">            <span class="attr">&quot;options&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span></span><br><span class="line">                <span class="string">&quot;nosuid&quot;</span><span class="punctuation">,</span></span><br><span class="line">                <span class="string">&quot;noexec&quot;</span><span class="punctuation">,</span></span><br><span class="line">                <span class="string">&quot;newinstance&quot;</span><span class="punctuation">,</span></span><br><span class="line">                <span class="string">&quot;ptmxmode=0666&quot;</span><span class="punctuation">,</span></span><br><span class="line">                <span class="string">&quot;mode=0620&quot;</span><span class="punctuation">,</span></span><br><span class="line">                <span class="string">&quot;gid=5&quot;</span></span><br><span class="line">            <span class="punctuation">]</span></span><br><span class="line">        <span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line">        <span class="punctuation">&#123;</span></span><br><span class="line">            <span class="attr">&quot;destination&quot;</span><span class="punctuation">:</span> <span class="string">&quot;/dev/shm&quot;</span><span class="punctuation">,</span></span><br><span class="line">            <span class="attr">&quot;type&quot;</span><span class="punctuation">:</span> <span class="string">&quot;tmpfs&quot;</span><span class="punctuation">,</span></span><br><span class="line">            <span class="attr">&quot;source&quot;</span><span class="punctuation">:</span> <span class="string">&quot;shm&quot;</span><span class="punctuation">,</span></span><br><span class="line">            <span class="attr">&quot;options&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span></span><br><span class="line">                <span class="string">&quot;nosuid&quot;</span><span class="punctuation">,</span></span><br><span class="line">                <span class="string">&quot;noexec&quot;</span><span class="punctuation">,</span></span><br><span class="line">                <span class="string">&quot;nodev&quot;</span><span class="punctuation">,</span></span><br><span class="line">                <span class="string">&quot;mode=1777&quot;</span><span class="punctuation">,</span></span><br><span class="line">                <span class="string">&quot;size=65536k&quot;</span></span><br><span class="line">            <span class="punctuation">]</span></span><br><span class="line">        <span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line">        <span class="punctuation">&#123;</span></span><br><span class="line">            <span class="attr">&quot;destination&quot;</span><span class="punctuation">:</span> <span class="string">&quot;/dev/mqueue&quot;</span><span class="punctuation">,</span></span><br><span class="line">            <span class="attr">&quot;type&quot;</span><span class="punctuation">:</span> <span class="string">&quot;mqueue&quot;</span><span class="punctuation">,</span></span><br><span class="line">            <span class="attr">&quot;source&quot;</span><span class="punctuation">:</span> <span class="string">&quot;mqueue&quot;</span><span class="punctuation">,</span></span><br><span class="line">            <span class="attr">&quot;options&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span></span><br><span class="line">                <span class="string">&quot;nosuid&quot;</span><span class="punctuation">,</span></span><br><span class="line">                <span class="string">&quot;noexec&quot;</span><span class="punctuation">,</span></span><br><span class="line">                <span class="string">&quot;nodev&quot;</span></span><br><span class="line">            <span class="punctuation">]</span></span><br><span class="line">        <span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line">        <span class="punctuation">&#123;</span></span><br><span class="line">            <span class="attr">&quot;destination&quot;</span><span class="punctuation">:</span> <span class="string">&quot;/sys&quot;</span><span class="punctuation">,</span></span><br><span class="line">            <span class="attr">&quot;type&quot;</span><span class="punctuation">:</span> <span class="string">&quot;sysfs&quot;</span><span class="punctuation">,</span></span><br><span class="line">            <span class="attr">&quot;source&quot;</span><span class="punctuation">:</span> <span class="string">&quot;sysfs&quot;</span><span class="punctuation">,</span></span><br><span class="line">            <span class="attr">&quot;options&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span></span><br><span class="line">                <span class="string">&quot;nosuid&quot;</span><span class="punctuation">,</span></span><br><span class="line">                <span class="string">&quot;noexec&quot;</span><span class="punctuation">,</span></span><br><span class="line">                <span class="string">&quot;nodev&quot;</span></span><br><span class="line">            <span class="punctuation">]</span></span><br><span class="line">        <span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line">        <span class="punctuation">&#123;</span></span><br><span class="line">            <span class="attr">&quot;destination&quot;</span><span class="punctuation">:</span> <span class="string">&quot;/sys/fs/cgroup&quot;</span><span class="punctuation">,</span></span><br><span class="line">            <span class="attr">&quot;type&quot;</span><span class="punctuation">:</span> <span class="string">&quot;cgroup&quot;</span><span class="punctuation">,</span></span><br><span class="line">            <span class="attr">&quot;source&quot;</span><span class="punctuation">:</span> <span class="string">&quot;cgroup&quot;</span><span class="punctuation">,</span></span><br><span class="line">            <span class="attr">&quot;options&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span></span><br><span class="line">                <span class="string">&quot;nosuid&quot;</span><span class="punctuation">,</span></span><br><span class="line">                <span class="string">&quot;noexec&quot;</span><span class="punctuation">,</span></span><br><span class="line">                <span class="string">&quot;nodev&quot;</span><span class="punctuation">,</span></span><br><span class="line">                <span class="string">&quot;relatime&quot;</span><span class="punctuation">,</span></span><br><span class="line">                <span class="string">&quot;ro&quot;</span></span><br><span class="line">            <span class="punctuation">]</span></span><br><span class="line">        <span class="punctuation">&#125;</span></span><br><span class="line">    <span class="punctuation">]</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">&quot;hooks&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">        <span class="attr">&quot;prestart&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span></span><br><span class="line">            <span class="punctuation">&#123;</span></span><br><span class="line">                <span class="attr">&quot;path&quot;</span><span class="punctuation">:</span> <span class="string">&quot;/usr/bin/fix-mounts&quot;</span><span class="punctuation">,</span></span><br><span class="line">                <span class="attr">&quot;args&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span></span><br><span class="line">                    <span class="string">&quot;fix-mounts&quot;</span><span class="punctuation">,</span></span><br><span class="line">                    <span class="string">&quot;arg1&quot;</span><span class="punctuation">,</span></span><br><span class="line">                    <span class="string">&quot;arg2&quot;</span></span><br><span class="line">                <span class="punctuation">]</span><span class="punctuation">,</span></span><br><span class="line">                <span class="attr">&quot;env&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span></span><br><span class="line">                    <span class="string">&quot;key1=value1&quot;</span></span><br><span class="line">                <span class="punctuation">]</span></span><br><span class="line">            <span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line">            <span class="punctuation">&#123;</span></span><br><span class="line">                <span class="attr">&quot;path&quot;</span><span class="punctuation">:</span> <span class="string">&quot;/usr/bin/setup-network&quot;</span></span><br><span class="line">            <span class="punctuation">&#125;</span></span><br><span class="line">        <span class="punctuation">]</span><span class="punctuation">,</span></span><br><span class="line">        <span class="attr">&quot;poststart&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span></span><br><span class="line">            <span class="punctuation">&#123;</span></span><br><span class="line">                <span class="attr">&quot;path&quot;</span><span class="punctuation">:</span> <span class="string">&quot;/usr/bin/notify-start&quot;</span><span class="punctuation">,</span></span><br><span class="line">                <span class="attr">&quot;timeout&quot;</span><span class="punctuation">:</span> <span class="number">5</span></span><br><span class="line">            <span class="punctuation">&#125;</span></span><br><span class="line">        <span class="punctuation">]</span><span class="punctuation">,</span></span><br><span class="line">        <span class="attr">&quot;poststop&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span></span><br><span class="line">            <span class="punctuation">&#123;</span></span><br><span class="line">                <span class="attr">&quot;path&quot;</span><span class="punctuation">:</span> <span class="string">&quot;/usr/sbin/cleanup.sh&quot;</span><span class="punctuation">,</span></span><br><span class="line">                <span class="attr">&quot;args&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span></span><br><span class="line">                    <span class="string">&quot;cleanup.sh&quot;</span><span class="punctuation">,</span></span><br><span class="line">                    <span class="string">&quot;-f&quot;</span></span><br><span class="line">                <span class="punctuation">]</span></span><br><span class="line">            <span class="punctuation">&#125;</span></span><br><span class="line">        <span class="punctuation">]</span></span><br><span class="line">    <span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">&quot;linux&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">        <span class="attr">&quot;devices&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span></span><br><span class="line">            <span class="punctuation">&#123;</span></span><br><span class="line">                <span class="attr">&quot;path&quot;</span><span class="punctuation">:</span> <span class="string">&quot;/dev/fuse&quot;</span><span class="punctuation">,</span></span><br><span class="line">                <span class="attr">&quot;type&quot;</span><span class="punctuation">:</span> <span class="string">&quot;c&quot;</span><span class="punctuation">,</span></span><br><span class="line">                <span class="attr">&quot;major&quot;</span><span class="punctuation">:</span> <span class="number">10</span><span class="punctuation">,</span></span><br><span class="line">                <span class="attr">&quot;minor&quot;</span><span class="punctuation">:</span> <span class="number">229</span><span class="punctuation">,</span></span><br><span class="line">                <span class="attr">&quot;fileMode&quot;</span><span class="punctuation">:</span> <span class="number">438</span><span class="punctuation">,</span></span><br><span class="line">                <span class="attr">&quot;uid&quot;</span><span class="punctuation">:</span> <span class="number">0</span><span class="punctuation">,</span></span><br><span class="line">                <span class="attr">&quot;gid&quot;</span><span class="punctuation">:</span> <span class="number">0</span></span><br><span class="line">            <span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line">            <span class="punctuation">&#123;</span></span><br><span class="line">                <span class="attr">&quot;path&quot;</span><span class="punctuation">:</span> <span class="string">&quot;/dev/sda&quot;</span><span class="punctuation">,</span></span><br><span class="line">                <span class="attr">&quot;type&quot;</span><span class="punctuation">:</span> <span class="string">&quot;b&quot;</span><span class="punctuation">,</span></span><br><span class="line">                <span class="attr">&quot;major&quot;</span><span class="punctuation">:</span> <span class="number">8</span><span class="punctuation">,</span></span><br><span class="line">                <span class="attr">&quot;minor&quot;</span><span class="punctuation">:</span> <span class="number">0</span><span class="punctuation">,</span></span><br><span class="line">                <span class="attr">&quot;fileMode&quot;</span><span class="punctuation">:</span> <span class="number">432</span><span class="punctuation">,</span></span><br><span class="line">                <span class="attr">&quot;uid&quot;</span><span class="punctuation">:</span> <span class="number">0</span><span class="punctuation">,</span></span><br><span class="line">                <span class="attr">&quot;gid&quot;</span><span class="punctuation">:</span> <span class="number">0</span></span><br><span class="line">            <span class="punctuation">&#125;</span></span><br><span class="line">        <span class="punctuation">]</span><span class="punctuation">,</span></span><br><span class="line">        <span class="attr">&quot;uidMappings&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span></span><br><span class="line">            <span class="punctuation">&#123;</span></span><br><span class="line">                <span class="attr">&quot;containerID&quot;</span><span class="punctuation">:</span> <span class="number">0</span><span class="punctuation">,</span></span><br><span class="line">                <span class="attr">&quot;hostID&quot;</span><span class="punctuation">:</span> <span class="number">1000</span><span class="punctuation">,</span></span><br><span class="line">                <span class="attr">&quot;size&quot;</span><span class="punctuation">:</span> <span class="number">32000</span></span><br><span class="line">            <span class="punctuation">&#125;</span></span><br><span class="line">        <span class="punctuation">]</span><span class="punctuation">,</span></span><br><span class="line">        <span class="attr">&quot;gidMappings&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span></span><br><span class="line">            <span class="punctuation">&#123;</span></span><br><span class="line">                <span class="attr">&quot;containerID&quot;</span><span class="punctuation">:</span> <span class="number">0</span><span class="punctuation">,</span></span><br><span class="line">                <span class="attr">&quot;hostID&quot;</span><span class="punctuation">:</span> <span class="number">1000</span><span class="punctuation">,</span></span><br><span class="line">                <span class="attr">&quot;size&quot;</span><span class="punctuation">:</span> <span class="number">32000</span></span><br><span class="line">            <span class="punctuation">&#125;</span></span><br><span class="line">        <span class="punctuation">]</span><span class="punctuation">,</span></span><br><span class="line">        <span class="attr">&quot;sysctl&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">            <span class="attr">&quot;net.ipv4.ip_forward&quot;</span><span class="punctuation">:</span> <span class="string">&quot;1&quot;</span><span class="punctuation">,</span></span><br><span class="line">            <span class="attr">&quot;net.core.somaxconn&quot;</span><span class="punctuation">:</span> <span class="string">&quot;256&quot;</span></span><br><span class="line">        <span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line">        <span class="attr">&quot;cgroupsPath&quot;</span><span class="punctuation">:</span> <span class="string">&quot;/myRuntime/myContainer&quot;</span><span class="punctuation">,</span></span><br><span class="line">        <span class="attr">&quot;resources&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">            <span class="attr">&quot;network&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">                <span class="attr">&quot;classID&quot;</span><span class="punctuation">:</span> <span class="number">1048577</span><span class="punctuation">,</span></span><br><span class="line">                <span class="attr">&quot;priorities&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span></span><br><span class="line">                    <span class="punctuation">&#123;</span></span><br><span class="line">                        <span class="attr">&quot;name&quot;</span><span class="punctuation">:</span> <span class="string">&quot;eth0&quot;</span><span class="punctuation">,</span></span><br><span class="line">                        <span class="attr">&quot;priority&quot;</span><span class="punctuation">:</span> <span class="number">500</span></span><br><span class="line">                    <span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line">                    <span class="punctuation">&#123;</span></span><br><span class="line">                        <span class="attr">&quot;name&quot;</span><span class="punctuation">:</span> <span class="string">&quot;eth1&quot;</span><span class="punctuation">,</span></span><br><span class="line">                        <span class="attr">&quot;priority&quot;</span><span class="punctuation">:</span> <span class="number">1000</span></span><br><span class="line">                    <span class="punctuation">&#125;</span></span><br><span class="line">                <span class="punctuation">]</span></span><br><span class="line">            <span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line">            <span class="attr">&quot;pids&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">                <span class="attr">&quot;limit&quot;</span><span class="punctuation">:</span> <span class="number">32771</span></span><br><span class="line">            <span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line">            <span class="attr">&quot;hugepageLimits&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span></span><br><span class="line">                <span class="punctuation">&#123;</span></span><br><span class="line">                    <span class="attr">&quot;pageSize&quot;</span><span class="punctuation">:</span> <span class="string">&quot;2MB&quot;</span><span class="punctuation">,</span></span><br><span class="line">                    <span class="attr">&quot;limit&quot;</span><span class="punctuation">:</span> <span class="number">9223372036854772000</span></span><br><span class="line">                <span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line">                <span class="punctuation">&#123;</span></span><br><span class="line">                    <span class="attr">&quot;pageSize&quot;</span><span class="punctuation">:</span> <span class="string">&quot;64KB&quot;</span><span class="punctuation">,</span></span><br><span class="line">                    <span class="attr">&quot;limit&quot;</span><span class="punctuation">:</span> <span class="number">1000000</span></span><br><span class="line">                <span class="punctuation">&#125;</span></span><br><span class="line">            <span class="punctuation">]</span><span class="punctuation">,</span></span><br><span class="line">            <span class="attr">&quot;memory&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">                <span class="attr">&quot;limit&quot;</span><span class="punctuation">:</span> <span class="number">536870912</span><span class="punctuation">,</span></span><br><span class="line">                <span class="attr">&quot;reservation&quot;</span><span class="punctuation">:</span> <span class="number">536870912</span><span class="punctuation">,</span></span><br><span class="line">                <span class="attr">&quot;swap&quot;</span><span class="punctuation">:</span> <span class="number">536870912</span><span class="punctuation">,</span></span><br><span class="line">                <span class="attr">&quot;kernel&quot;</span><span class="punctuation">:</span> <span class="number">-1</span><span class="punctuation">,</span></span><br><span class="line">                <span class="attr">&quot;kernelTCP&quot;</span><span class="punctuation">:</span> <span class="number">-1</span><span class="punctuation">,</span></span><br><span class="line">                <span class="attr">&quot;swappiness&quot;</span><span class="punctuation">:</span> <span class="number">0</span><span class="punctuation">,</span></span><br><span class="line">                <span class="attr">&quot;disableOOMKiller&quot;</span><span class="punctuation">:</span> <span class="literal"><span class="keyword">false</span></span></span><br><span class="line">            <span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line">            <span class="attr">&quot;cpu&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">                <span class="attr">&quot;shares&quot;</span><span class="punctuation">:</span> <span class="number">1024</span><span class="punctuation">,</span></span><br><span class="line">                <span class="attr">&quot;quota&quot;</span><span class="punctuation">:</span> <span class="number">1000000</span><span class="punctuation">,</span></span><br><span class="line">                <span class="attr">&quot;period&quot;</span><span class="punctuation">:</span> <span class="number">500000</span><span class="punctuation">,</span></span><br><span class="line">                <span class="attr">&quot;realtimeRuntime&quot;</span><span class="punctuation">:</span> <span class="number">950000</span><span class="punctuation">,</span></span><br><span class="line">                <span class="attr">&quot;realtimePeriod&quot;</span><span class="punctuation">:</span> <span class="number">1000000</span><span class="punctuation">,</span></span><br><span class="line">                <span class="attr">&quot;cpus&quot;</span><span class="punctuation">:</span> <span class="string">&quot;2-3&quot;</span><span class="punctuation">,</span></span><br><span class="line">                <span class="attr">&quot;mems&quot;</span><span class="punctuation">:</span> <span class="string">&quot;0-7&quot;</span></span><br><span class="line">            <span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line">            <span class="attr">&quot;devices&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span></span><br><span class="line">                <span class="punctuation">&#123;</span></span><br><span class="line">                    <span class="attr">&quot;allow&quot;</span><span class="punctuation">:</span> <span class="literal"><span class="keyword">false</span></span><span class="punctuation">,</span></span><br><span class="line">                    <span class="attr">&quot;access&quot;</span><span class="punctuation">:</span> <span class="string">&quot;rwm&quot;</span></span><br><span class="line">                <span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line">                <span class="punctuation">&#123;</span></span><br><span class="line">                    <span class="attr">&quot;allow&quot;</span><span class="punctuation">:</span> <span class="literal"><span class="keyword">true</span></span><span class="punctuation">,</span></span><br><span class="line">                    <span class="attr">&quot;type&quot;</span><span class="punctuation">:</span> <span class="string">&quot;c&quot;</span><span class="punctuation">,</span></span><br><span class="line">                    <span class="attr">&quot;major&quot;</span><span class="punctuation">:</span> <span class="number">10</span><span class="punctuation">,</span></span><br><span class="line">                    <span class="attr">&quot;minor&quot;</span><span class="punctuation">:</span> <span class="number">229</span><span class="punctuation">,</span></span><br><span class="line">                    <span class="attr">&quot;access&quot;</span><span class="punctuation">:</span> <span class="string">&quot;rw&quot;</span></span><br><span class="line">                <span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line">                <span class="punctuation">&#123;</span></span><br><span class="line">                    <span class="attr">&quot;allow&quot;</span><span class="punctuation">:</span> <span class="literal"><span class="keyword">true</span></span><span class="punctuation">,</span></span><br><span class="line">                    <span class="attr">&quot;type&quot;</span><span class="punctuation">:</span> <span class="string">&quot;b&quot;</span><span class="punctuation">,</span></span><br><span class="line">                    <span class="attr">&quot;major&quot;</span><span class="punctuation">:</span> <span class="number">8</span><span class="punctuation">,</span></span><br><span class="line">                    <span class="attr">&quot;minor&quot;</span><span class="punctuation">:</span> <span class="number">0</span><span class="punctuation">,</span></span><br><span class="line">                    <span class="attr">&quot;access&quot;</span><span class="punctuation">:</span> <span class="string">&quot;r&quot;</span></span><br><span class="line">                <span class="punctuation">&#125;</span></span><br><span class="line">            <span class="punctuation">]</span><span class="punctuation">,</span></span><br><span class="line">            <span class="attr">&quot;blockIO&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">                <span class="attr">&quot;weight&quot;</span><span class="punctuation">:</span> <span class="number">10</span><span class="punctuation">,</span></span><br><span class="line">                <span class="attr">&quot;leafWeight&quot;</span><span class="punctuation">:</span> <span class="number">10</span><span class="punctuation">,</span></span><br><span class="line">                <span class="attr">&quot;weightDevice&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span></span><br><span class="line">                    <span class="punctuation">&#123;</span></span><br><span class="line">                        <span class="attr">&quot;major&quot;</span><span class="punctuation">:</span> <span class="number">8</span><span class="punctuation">,</span></span><br><span class="line">                        <span class="attr">&quot;minor&quot;</span><span class="punctuation">:</span> <span class="number">0</span><span class="punctuation">,</span></span><br><span class="line">                        <span class="attr">&quot;weight&quot;</span><span class="punctuation">:</span> <span class="number">500</span><span class="punctuation">,</span></span><br><span class="line">                        <span class="attr">&quot;leafWeight&quot;</span><span class="punctuation">:</span> <span class="number">300</span></span><br><span class="line">                    <span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line">                    <span class="punctuation">&#123;</span></span><br><span class="line">                        <span class="attr">&quot;major&quot;</span><span class="punctuation">:</span> <span class="number">8</span><span class="punctuation">,</span></span><br><span class="line">                        <span class="attr">&quot;minor&quot;</span><span class="punctuation">:</span> <span class="number">16</span><span class="punctuation">,</span></span><br><span class="line">                        <span class="attr">&quot;weight&quot;</span><span class="punctuation">:</span> <span class="number">500</span></span><br><span class="line">                    <span class="punctuation">&#125;</span></span><br><span class="line">                <span class="punctuation">]</span><span class="punctuation">,</span></span><br><span class="line">                <span class="attr">&quot;throttleReadBpsDevice&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span></span><br><span class="line">                    <span class="punctuation">&#123;</span></span><br><span class="line">                        <span class="attr">&quot;major&quot;</span><span class="punctuation">:</span> <span class="number">8</span><span class="punctuation">,</span></span><br><span class="line">                        <span class="attr">&quot;minor&quot;</span><span class="punctuation">:</span> <span class="number">0</span><span class="punctuation">,</span></span><br><span class="line">                        <span class="attr">&quot;rate&quot;</span><span class="punctuation">:</span> <span class="number">600</span></span><br><span class="line">                    <span class="punctuation">&#125;</span></span><br><span class="line">                <span class="punctuation">]</span><span class="punctuation">,</span></span><br><span class="line">                <span class="attr">&quot;throttleWriteIOPSDevice&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span></span><br><span class="line">                    <span class="punctuation">&#123;</span></span><br><span class="line">                        <span class="attr">&quot;major&quot;</span><span class="punctuation">:</span> <span class="number">8</span><span class="punctuation">,</span></span><br><span class="line">                        <span class="attr">&quot;minor&quot;</span><span class="punctuation">:</span> <span class="number">16</span><span class="punctuation">,</span></span><br><span class="line">                        <span class="attr">&quot;rate&quot;</span><span class="punctuation">:</span> <span class="number">300</span></span><br><span class="line">                    <span class="punctuation">&#125;</span></span><br><span class="line">                <span class="punctuation">]</span></span><br><span class="line">            <span class="punctuation">&#125;</span></span><br><span class="line">        <span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line">        <span class="attr">&quot;rootfsPropagation&quot;</span><span class="punctuation">:</span> <span class="string">&quot;slave&quot;</span><span class="punctuation">,</span></span><br><span class="line">        <span class="attr">&quot;seccomp&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">            <span class="attr">&quot;defaultAction&quot;</span><span class="punctuation">:</span> <span class="string">&quot;SCMP_ACT_ALLOW&quot;</span><span class="punctuation">,</span></span><br><span class="line">            <span class="attr">&quot;architectures&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span></span><br><span class="line">                <span class="string">&quot;SCMP_ARCH_X86&quot;</span><span class="punctuation">,</span></span><br><span class="line">                <span class="string">&quot;SCMP_ARCH_X32&quot;</span></span><br><span class="line">            <span class="punctuation">]</span><span class="punctuation">,</span></span><br><span class="line">            <span class="attr">&quot;syscalls&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span></span><br><span class="line">                <span class="punctuation">&#123;</span></span><br><span class="line">                    <span class="attr">&quot;names&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span></span><br><span class="line">                        <span class="string">&quot;getcwd&quot;</span><span class="punctuation">,</span></span><br><span class="line">                        <span class="string">&quot;chmod&quot;</span></span><br><span class="line">                    <span class="punctuation">]</span><span class="punctuation">,</span></span><br><span class="line">                    <span class="attr">&quot;action&quot;</span><span class="punctuation">:</span> <span class="string">&quot;SCMP_ACT_ERRNO&quot;</span></span><br><span class="line">                <span class="punctuation">&#125;</span></span><br><span class="line">            <span class="punctuation">]</span></span><br><span class="line">        <span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line">        <span class="attr">&quot;namespaces&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span></span><br><span class="line">            <span class="punctuation">&#123;</span></span><br><span class="line">                <span class="attr">&quot;type&quot;</span><span class="punctuation">:</span> <span class="string">&quot;pid&quot;</span></span><br><span class="line">            <span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line">            <span class="punctuation">&#123;</span></span><br><span class="line">                <span class="attr">&quot;type&quot;</span><span class="punctuation">:</span> <span class="string">&quot;network&quot;</span></span><br><span class="line">            <span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line">            <span class="punctuation">&#123;</span></span><br><span class="line">                <span class="attr">&quot;type&quot;</span><span class="punctuation">:</span> <span class="string">&quot;ipc&quot;</span></span><br><span class="line">            <span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line">            <span class="punctuation">&#123;</span></span><br><span class="line">                <span class="attr">&quot;type&quot;</span><span class="punctuation">:</span> <span class="string">&quot;uts&quot;</span></span><br><span class="line">            <span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line">            <span class="punctuation">&#123;</span></span><br><span class="line">                <span class="attr">&quot;type&quot;</span><span class="punctuation">:</span> <span class="string">&quot;mount&quot;</span></span><br><span class="line">            <span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line">            <span class="punctuation">&#123;</span></span><br><span class="line">                <span class="attr">&quot;type&quot;</span><span class="punctuation">:</span> <span class="string">&quot;user&quot;</span></span><br><span class="line">            <span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line">            <span class="punctuation">&#123;</span></span><br><span class="line">                <span class="attr">&quot;type&quot;</span><span class="punctuation">:</span> <span class="string">&quot;cgroup&quot;</span></span><br><span class="line">            <span class="punctuation">&#125;</span></span><br><span class="line">        <span class="punctuation">]</span><span class="punctuation">,</span></span><br><span class="line">        <span class="attr">&quot;maskedPaths&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span></span><br><span class="line">            <span class="string">&quot;/proc/kcore&quot;</span><span class="punctuation">,</span></span><br><span class="line">            <span class="string">&quot;/proc/latency_stats&quot;</span><span class="punctuation">,</span></span><br><span class="line">            <span class="string">&quot;/proc/timer_stats&quot;</span><span class="punctuation">,</span></span><br><span class="line">            <span class="string">&quot;/proc/sched_debug&quot;</span></span><br><span class="line">        <span class="punctuation">]</span><span class="punctuation">,</span></span><br><span class="line">        <span class="attr">&quot;readonlyPaths&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span></span><br><span class="line">            <span class="string">&quot;/proc/asound&quot;</span><span class="punctuation">,</span></span><br><span class="line">            <span class="string">&quot;/proc/bus&quot;</span><span class="punctuation">,</span></span><br><span class="line">            <span class="string">&quot;/proc/fs&quot;</span><span class="punctuation">,</span></span><br><span class="line">            <span class="string">&quot;/proc/irq&quot;</span><span class="punctuation">,</span></span><br><span class="line">            <span class="string">&quot;/proc/sys&quot;</span><span class="punctuation">,</span></span><br><span class="line">            <span class="string">&quot;/proc/sysrq-trigger&quot;</span></span><br><span class="line">        <span class="punctuation">]</span><span class="punctuation">,</span></span><br><span class="line">        <span class="attr">&quot;mountLabel&quot;</span><span class="punctuation">:</span> <span class="string">&quot;system_u:object_r:svirt_sandbox_file_t:s0:c715,c811&quot;</span></span><br><span class="line">    <span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">&quot;annotations&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">        <span class="attr">&quot;com.example.key1&quot;</span><span class="punctuation">:</span> <span class="string">&quot;value1&quot;</span><span class="punctuation">,</span></span><br><span class="line">        <span class="attr">&quot;com.example.key2&quot;</span><span class="punctuation">:</span> <span class="string">&quot;value2&quot;</span></span><br><span class="line">    <span class="punctuation">&#125;</span></span><br><span class="line"><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
+
+
+
+<p>~~ <strong>本文 END</strong> ~~</p>
+
+
+<div class="article-footer reveal fs14"><section id="license"><div class="header"><span>许可协议</span></div><div class="body"><p>本文采用 <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">署名-非商业性使用-相同方式共享 4.0 国际</a> 许可协议，转载请注明出处。</p>
+</div></section></div>
+
+</article>
+
+<div class="related-wrap reveal" id="read-next"><section class="body"><div class="item" id="prev"><div class="note">较新文章</div><a href="/2023/01/16/OCI_Runtime_spec/">OCI Runtime spec 运行时规范</a></div><div class="item" id="next"><div class="note">较早文章</div><a href="/2023/01/16/hello-world/">Hexo 基础命令</a></div></section></div>
+
+
+
+
+
+
+  <div class='related-wrap md-text reveal' id="comments">
+    <section class='header cmt-title cap theme'>
+      快来参与讨论吧
+    </section>
+    <section class='body cmt-body artalk'>
+      
+
+<div id="artalk_container"><svg class="loading" style="vertical-align: middle;fill: currentColor;overflow: hidden;" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="2709"><path d="M832 512c0-176-144-320-320-320V128c211.2 0 384 172.8 384 384h-64zM192 512c0 176 144 320 320 320v64C300.8 896 128 723.2 128 512h64z" p-id="2710"></path></svg></div>
+    </section>
+  </div>
+
+
+
+      
+<footer class="page-footer reveal fs12"><hr><div class="text"><p>个人技术分享 |  经验总结 |  技术实践  |  心情<br>XiaoYang   <a href="mailto:&#x73;&#117;&#x70;&#101;&#114;&#115;&#112;&#106;&#106;&#64;&#x31;&#54;&#x33;&#46;&#x63;&#111;&#x6d;">&#x73;&#117;&#x70;&#101;&#114;&#115;&#112;&#106;&#106;&#64;&#x31;&#54;&#x33;&#46;&#x63;&#111;&#x6d;</a>          </p>
+</div></footer>
+
+      <div class='float-panel mobile-only blur' style='display:none'>
+  <button type='button' class='sidebar-toggle mobile' onclick='sidebar.toggle()'>
+    <svg class="icon" style="width: 1em; height: 1em;vertical-align: middle;fill: currentColor;overflow: hidden;" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="15301"><path d="M566.407 808.3c26.9-0.1 49.3-20.8 51.6-47.6-1.9-27.7-23.9-49.7-51.6-51.6h-412.6c-28.2-1.4-52.6 19.5-55.5 47.6 2.3 26.8 24.6 47.5 51.6 47.6h416.5v4z m309.3-249.9c26.9-0.1 49.3-20.8 51.6-47.6-2.2-26.8-24.6-47.5-51.6-47.6h-721.9c-27.7-2.8-52.5 17.4-55.3 45.1-0.1 0.8-0.1 1.7-0.2 2.5 0.9 27.2 23.6 48.5 50.7 47.6H875.707z m-103.1-245.9c26.9-0.1 49.3-20.8 51.6-47.6-0.4-28.3-23.2-51.1-51.5-51.6h-618.9c-29.5-1.1-54.3 21.9-55.5 51.4v0.2c1.4 27.8 25.2 49.2 53 47.8 0.8 0 1.7-0.1 2.5-0.2h618.8z" p-id="15302"></path><path d="M566.407 808.3c26.9-0.1 49.3-20.8 51.6-47.6-1.9-27.7-23.9-49.7-51.6-51.6h-412.6c-28.2-1.4-52.6 19.5-55.5 47.6 1.9 27.7 23.9 49.7 51.6 51.6h416.5z m309.3-249.9c26.9-0.1 49.3-20.8 51.6-47.6-2.2-26.8-24.6-47.5-51.6-47.6h-721.9c-27.7-2.8-52.5 17.4-55.3 45.1-0.1 0.8-0.1 1.7-0.2 2.5 0.9 27.2 23.6 48.5 50.7 47.6H875.707z m-103.1-245.9c26.9-0.1 49.3-20.8 51.6-47.6-0.4-28.3-23.2-51.1-51.5-51.6h-618.9c-29.5-1.1-54.3 21.9-55.5 51.4v0.2c1.4 27.8 25.2 49.2 53 47.8 0.8 0 1.7-0.1 2.5-0.2h618.8z" p-id="15303"></path></svg>
+  </button>
+</div>
+
+    </div>
+  </div>
+  <div class='scripts'>
+    <script type="text/javascript">
+  const stellar = {
+    // 懒加载 css https://github.com/filamentgroup/loadCSS
+    loadCSS: (href, before, media, attributes) => {
+      var doc = window.document;
+      var ss = doc.createElement("link");
+      var ref;
+      if (before) {
+        ref = before;
+      } else {
+        var refs = (doc.body || doc.getElementsByTagName("head")[0]).childNodes;
+        ref = refs[refs.length - 1];
+      }
+      var sheets = doc.styleSheets;
+      if (attributes) {
+        for (var attributeName in attributes) {
+          if (attributes.hasOwnProperty(attributeName)) {
+            ss.setAttribute(attributeName, attributes[attributeName]);
+          }
+        }
+      }
+      ss.rel = "stylesheet";
+      ss.href = href;
+      ss.media = "only x";
+      function ready(cb) {
+        if (doc.body) {
+          return cb();
+        }
+        setTimeout(function () {
+          ready(cb);
+        });
+      }
+      ready(function () {
+        ref.parentNode.insertBefore(ss, before ? ref : ref.nextSibling);
+      });
+      var onloadcssdefined = function (cb) {
+        var resolvedHref = ss.href;
+        var i = sheets.length;
+        while (i--) {
+          if (sheets[i].href === resolvedHref) {
+            return cb();
+          }
+        }
+        setTimeout(function () {
+          onloadcssdefined(cb);
+        });
+      };
+      function loadCB() {
+        if (ss.addEventListener) {
+          ss.removeEventListener("load", loadCB);
+        }
+        ss.media = media || "all";
+      }
+      if (ss.addEventListener) {
+        ss.addEventListener("load", loadCB);
+      }
+      ss.onloadcssdefined = onloadcssdefined;
+      onloadcssdefined(loadCB);
+      return ss;
+    },
+
+    // 从 butterfly 和 volantis 获得灵感
+    loadScript: (src, opt) => new Promise((resolve, reject) => {
+      var script = document.createElement('script');
+      script.src = src;
+      if (opt) {
+        for (let key of Object.keys(opt)) {
+          script[key] = opt[key]
+        }
+      } else {
+        // 默认异步，如果需要同步，第二个参数传入 {} 即可
+        script.async = true
+      }
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    }),
+
+    // https://github.com/jerryc127/hexo-theme-butterfly
+    jQuery: (fn) => {
+      if (typeof jQuery === 'undefined') {
+        stellar.loadScript(stellar.plugins.jQuery).then(fn)
+      } else {
+        fn()
+      }
+    }
+  };
+  stellar.version = '1.18.5';
+  stellar.github = 'https://github.com/xaoxuu/hexo-theme-stellar/tree/1.18.5';
+  stellar.config = {
+    date_suffix: {
+      just: '刚刚',
+      min: '分钟前',
+      hour: '小时前',
+      day: '天前',
+      month: '个月前',
+    },
+  };
+
+  // required plugins (only load if needs)
+  stellar.plugins = {
+    jQuery: 'https://gcore.jsdelivr.net/npm/jquery@3.6.2/dist/jquery.min.js'
+  };
+
+  if ('local_search') {
+    stellar.search = {};
+    stellar.search.service = 'local_search';
+    if (stellar.search.service == 'local_search') {
+      let service_obj = Object.assign({}, {"field":"all","path":"/search.json","content":true,"sort":"-date"});
+      stellar.search[stellar.search.service] = service_obj;
+    }
+  }
+
+  // stellar js
+  stellar.plugins.stellar = Object.assign({"sites":"/js/plugins/sites.js","friends":"/js/plugins/friends.js","ghinfo":"/js/plugins/ghinfo.js","timeline":"/js/plugins/timeline.js","linkcard":"/js/plugins/linkcard.js","fcircle":"/js/plugins/fcircle.js","weibo":"/js/plugins/weibo.js"});
+
+  stellar.plugins.marked = Object.assign("https://cdn.bootcdn.net/ajax/libs/marked/4.0.18/marked.min.js");
+  // optional plugins
+  if ('true' == 'true') {
+    stellar.plugins.lazyload = Object.assign({"enable":true,"js":"https://gcore.jsdelivr.net/npm/vanilla-lazyload@17.8.3/dist/lazyload.min.js","transition":"blur"});
+  }
+  if ('true' == 'true') {
+    stellar.plugins.swiper = Object.assign({"enable":true,"css":"https://unpkg.com/swiper@8.4.5/swiper-bundle.min.css","js":"https://unpkg.com/swiper@8.4.5/swiper-bundle.min.js"});
+  }
+  if ('' == 'true') {
+    stellar.plugins.scrollreveal = Object.assign({"enable":null,"js":"https://gcore.jsdelivr.net/npm/scrollreveal@4.0.9/dist/scrollreveal.min.js","distance":"8px","duration":500,"interval":100,"scale":1});
+  }
+  if ('true' == 'true') {
+    stellar.plugins.preload = Object.assign({"enable":true,"service":"flying_pages","instant_page":"https://gcore.jsdelivr.net/gh/volantis-x/cdn-volantis@4.1.2/js/instant_page.js","flying_pages":"https://gcore.jsdelivr.net/gh/gijo-varghese/flying-pages@2.1.2/flying-pages.min.js"});
+  }
+  if ('true' == 'true') {
+    stellar.plugins.fancybox = Object.assign({"enable":true,"js":"https://gcore.jsdelivr.net/npm/@fancyapps/ui@4.0/dist/fancybox.umd.js","css":"https://gcore.jsdelivr.net/npm/@fancyapps/ui@4.0/dist/fancybox.css","selector":".swiper-slide img"});
+  }
+  if ('false' == 'true') {
+    stellar.plugins.heti = Object.assign({"enable":false,"css":"https://unpkg.com/heti@0.9.2/umd/heti.min.css","js":"https://unpkg.com/heti@0.9.2/umd/heti-addon.min.js"});
+  }
+</script>
+
+<!-- required -->
+
+  
+<script src="/js/main.js" async></script>
+
+
+
+<!-- optional -->
+
+  <script>
+  function load_artalk() {
+    if (!document.querySelectorAll("#artalk_container")[0]) return;
+    stellar.loadCSS('https://unpkg.com/artalk@2.4.3/dist/Artalk.css');
+    stellar.loadScript('https://unpkg.com/artalk@2.4.3/dist/Artalk.js', {defer: true}).then(function () {
+      const el = document.getElementById("artalk_container");
+      var path = el.getAttribute('comment_id');
+      if (!path) {
+        path = decodeURI(window.location.pathname);
+      }
+      var artalk = new Artalk({
+        el: '#artalk_container',
+        pageKey: path,
+        pageTitle: 'OCI 镜像格式规范',
+        server: '',
+        placeholder: '',
+        site: '知识库',
+        darkMode: 'auto'
+        })
+      });
+  }
+  window.addEventListener('DOMContentLoaded', (event) => {
+    load_artalk();
+  });
+</script>
+
+
+
+<!-- inject -->
+
+
+  </div>
+</body>
+</html>

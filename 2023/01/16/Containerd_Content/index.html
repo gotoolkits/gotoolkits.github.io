@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang='zh-CN'>
+
+<head>
+  <meta name="generator" content="Hexo 6.3.0">
+  <meta name="hexo-theme" content="https://github.com/xaoxuu/hexo-theme-stellar/tree/1.18.5">
+  <meta charset="utf-8">
+  
+
+  <meta http-equiv='x-dns-prefetch-control' content='on' />
+  <link rel='dns-prefetch' href='https://gcore.jsdelivr.net'>
+  <link rel="preconnect" href="https://gcore.jsdelivr.net" crossorigin>
+  <link rel='dns-prefetch' href='//unpkg.com'>
+
+  <meta name="renderer" content="webkit">
+  <meta name="force-rendering" content="webkit">
+  <meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1">
+  <meta name="HandheldFriendly" content="True" >
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="theme-color" content="#f8f8f8">
+  
+  <title>Containerd Content 服务 - 知识库</title>
+
+  
+    <meta name="description" content="概述本文主要针对 Containerd content 服务功能模块的相关代码分析，如下图 Containerd 官方架构图所示:   如同 Containerd 其它服务功能模块化机制，本文将从Content 服务相关接口定义、GRPC 和 Service 插件化注册、Plugin 加载相关过程、最后到服务功能的底层实现逻辑进行逐步分析 。 content 服务的作用？ 定义： ref  唯一标">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Containerd Content 服务">
+<meta property="og:url" content="http://example.com/2023/01/16/Containerd_Content/index.html">
+<meta property="og:site_name" content="知识库">
+<meta property="og:description" content="概述本文主要针对 Containerd content 服务功能模块的相关代码分析，如下图 Containerd 官方架构图所示:   如同 Containerd 其它服务功能模块化机制，本文将从Content 服务相关接口定义、GRPC 和 Service 插件化注册、Plugin 加载相关过程、最后到服务功能的底层实现逻辑进行逐步分析 。 content 服务的作用？ 定义： ref  唯一标">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://example.com/assets/wiki/photos/containerd-content.png">
+<meta property="article:published_time" content="2023-01-16T02:16:30.179Z">
+<meta property="article:modified_time" content="2023-01-16T02:16:30.179Z">
+<meta property="article:author" content="YuChang Yang">
+<meta property="article:tag" content="docker">
+<meta property="article:tag" content="containerd">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="http://example.com/assets/wiki/photos/containerd-content.png">
+  
+  
+
+  <!-- feed -->
+  
+
+  
+    
+<link rel="stylesheet" href="/css/main.css">
+
+  
+
+  
+    <link rel="shortcut icon" href="/assets/knowledge.png">
+  
+
+  
+
+  
+
+
+  
+</head>
+
+<body>
+  
+
+<div class="l_cover post"><div class="cover"><div class="lazy img bg" data-bg="https://source.unsplash.com/2000x400/?new year"></div></div></div>
+
+
+  <div class='l_body' id='start'>
+    <aside class='l_left' layout='post'>
+    
+
+  
+
+<header class="header"><div class="logo-wrap"><a class="avatar" href="/"><div class="bg" style="opacity:0;background-image:url(https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.4/avatar/round/rainbow64@3x.webp);"></div><img no-lazy class="avatar" src="/assets/logo.svg" onerror="javascript:this.classList.add('error');this.src='https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.4/image/2659360.svg';"></a><a class="title" href="/"><div class="main" ff="title">知识库</div><div class="sub normal cap">建立团队内部知识分享</div><div class="sub hover cap" style="opacity:0"> 统一团队问题管理机制</div></a></div>
+
+<nav class="menu dis-select"><a class="nav-item active" href="/">系统</a><a class="nav-item" href="/wiki/">桌面</a><a class="nav-item" href="/notes/">数据</a><a class="nav-item" href="/more/">开发</a></nav>
+</header>
+
+
+<div class="widgets">
+<widget class="widget-wrapper search"><div class="widget-body"><div class="search-wrapper" id="search"><form class="search-form"><input type="text" class="search-input" id="search-input" data-filter="/blog/" placeholder="文章搜索"><svg t="1670596976048" class="icon search-icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="2676" width="200" height="200"><path d="M938.2 832.6L723.8 618.1c-2.5-2.5-5.3-4.4-7.9-6.4 36.2-55.6 57.3-121.8 57.3-193.1C773.3 222.8 614.6 64 418.7 64S64 222.8 64 418.6c0 195.9 158.8 354.6 354.6 354.6 71.3 0 137.5-21.2 193.2-57.4 2 2.7 3.9 5.4 6.3 7.8L832.5 938c14.6 14.6 33.7 21.9 52.8 21.9 19.1 0 38.2-7.3 52.8-21.8 29.2-29.1 29.2-76.4 0.1-105.5M418.7 661.3C284.9 661.3 176 552.4 176 418.6 176 284.9 284.9 176 418.7 176c133.8 0 242.6 108.9 242.6 242.7 0 133.7-108.9 242.6-242.6 242.6" p-id="2677"></path></svg></form><div id="search-result"></div><div class="search-no-result">没有找到内容！</div></div></div></widget>
+
+
+<widget class="widget-wrapper toc single" id="data-toc"><div class="widget-header cap dis-select"><span class="name">Containerd Content 服务</span></div><div class="widget-body fs14"><div class="doc-tree active"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%A6%82%E8%BF%B0"><span class="toc-text">概述</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Content-Store%E6%8E%A5%E5%8F%A3%E4%B8%8E%E6%96%B9%E6%B3%95%E5%AE%9A%E4%B9%89"><span class="toc-text">Content Store接口与方法定义</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Content-GRPC-%E6%B3%A8%E5%86%8C%E4%B8%8E-Server-%E5%AE%9E%E7%8E%B0"><span class="toc-text">Content GRPC 注册与 Server 实现</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Content-service-%E6%9C%8D%E5%8A%A1%E6%B3%A8%E5%86%8C%E4%B8%8E%E5%AE%9E%E7%8E%B0"><span class="toc-text">Content service 服务注册与实现</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%83%E6%95%B0%E6%8D%AE%E5%BA%93%E5%8F%8A%E5%86%85%E5%AE%B9%E5%AD%98%E5%82%A8%E5%BA%93"><span class="toc-text">元数据库及内容存储库</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%99%84%E5%BD%95"><span class="toc-text">附录</span></a></li></ol></div></div></widget>
+
+
+
+
+</div>
+<footer class="footer dis-select"><div class="social-wrap"><a class="social" href="https://github.com/gotoolkits" target="_blank" rel="external nofollow noopener noreferrer"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/assets/github.svg" /></a><a class="social" href="https://mail.163.com" target="_blank" rel="external nofollow noopener noreferrer"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/assets/mail.svg" /></a><a class="social" href="https://www.jianshu.com/u/0611daf62bd3" target="_blank" rel="external nofollow noopener noreferrer"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/assets/datas.svg" /></a><a class="social" href="https://www.jianshu.com/u/0611daf62bd3" target="_blank" rel="external nofollow noopener noreferrer"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/assets/jianshu.svg" /></a></div></footer>
+
+    </aside>
+    <div class='l_main'>
+      
+
+      
+
+
+<div class="bread-nav fs12"><div id="breadcrumb"><a class="cap breadcrumb" href="/">主页</a><span class="sep"></span><a class="cap breadcrumb" href="/">文章</a><span class="sep"></span><a class="cap breadcrumb-link" href="/categories/%E6%8A%80%E6%9C%AF%E6%96%87%E6%A1%A3/">技术文档</a> <span class="sep"></span> <a class="cap breadcrumb-link" href="/categories/%E6%8A%80%E6%9C%AF%E6%96%87%E6%A1%A3/docker%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">docker源码分析</a> <span class="sep"></span> <a class="cap breadcrumb-link" href="/categories/%E6%8A%80%E6%9C%AF%E6%96%87%E6%A1%A3/docker%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/Containerd/">Containerd</a></div><div id="post-meta">发布于&nbsp;<time datetime="2023-01-16T02:16:30.179Z">2023-01-16</time></div></div>
+
+<article class='md-text content post'>
+<h1 class="article-title"><span>Containerd Content 服务</span></h1>
+<h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><p>本文主要针对 Containerd content 服务功能模块的相关代码分析，如下图 Containerd 官方架构图所示:</p>
+<img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/assets/wiki/photos/containerd-content.png" alt="containerd-content" style="zoom:50%;" />
+
+<p>如同 Containerd 其它服务功能模块化机制，本文将从Content 服务相关接口定义、GRPC 和 Service 插件化注册、Plugin 加载相关过程、最后到服务功能的底层实现逻辑进行逐步分析 。</p>
+<p>content 服务的作用？</p>
+<p>定义：</p>
+<p>ref  唯一标识值</p>
+<h2 id="Content-Store接口与方法定义"><a href="#Content-Store接口与方法定义" class="headerlink" title="Content Store接口与方法定义"></a>Content Store接口与方法定义</h2><p>Store 接口继承了各 content 内容管理相关的接口集合，后面每个接口将都有详细说明</p>
+<p>content&#x2F;content.go:136</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> Store <span class="keyword">interface</span> &#123;</span><br><span class="line">	Manager         <span class="comment">// 信息查找、删除管理接口 </span></span><br><span class="line">	Provider        <span class="comment">// 读取接口 </span></span><br><span class="line">  IngestManager   <span class="comment">// 写管理接口(写状态、终止)</span></span><br><span class="line">	Ingester        <span class="comment">// 存写接口</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>Manager 提供了基础的 content 内容管理方法如内容元信息获取、更新、列表查找、删除</p>
+<p>content&#x2F;content.go:75</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> Manager <span class="keyword">interface</span> &#123;</span><br><span class="line">  <span class="comment">// 返回内容存储数据库存放 content 元数据信息</span></span><br><span class="line">	Info(ctx context.Context, dgst digest.Digest) (Info, <span class="type">error</span>)</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 更新 content 相关的可变信息项，如 labels.* 标签项更新</span></span><br><span class="line">	Update(ctx context.Context, info Info, fieldpaths ...<span class="type">string</span>) (Info, <span class="type">error</span>)</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 遍历内容存储数据库的所有项进行查找匹配指定的过滤条件项</span></span><br><span class="line">	Walk(ctx context.Context, fn WalkFunc, filters ...<span class="type">string</span>) <span class="type">error</span></span><br><span class="line"></span><br><span class="line">	<span class="comment">// 从内容存储数据库移除指定的 content</span></span><br><span class="line">	Delete(ctx context.Context, dgst digest.Digest) <span class="type">error</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>Provider 提供了 content 的读取接口，返回一个内容读取器对象 ReaderAt </p>
+<p>content&#x2F;content.go:35</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> Provider <span class="keyword">interface</span> &#123;</span><br><span class="line">	<span class="comment">// ocispec.Descriptor 描述符唯一需要指定 desc.Digest 内容的摘要散列值 </span></span><br><span class="line">	ReaderAt(ctx context.Context, dec ocispec.Descriptor) (ReaderAt, <span class="type">error</span>)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 使用标准的 io 接口 io.Closer 、io.ReaderAt，扩展大小计算报告</span></span><br><span class="line"><span class="keyword">type</span> ReaderAt <span class="keyword">interface</span> &#123;</span><br><span class="line">	io.ReaderAt</span><br><span class="line">	io.Closer</span><br><span class="line">	Size() <span class="type">int64</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p> IngestManager 写管理接口(存写状态获取、中止操作)</p>
+<p>content&#x2F;content.go:98</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> IngestManager <span class="keyword">interface</span> &#123;</span><br><span class="line">	<span class="comment">// 查看指定 ref 引用 Ingest 操作的状态信息</span></span><br><span class="line">	Status(ctx context.Context, ref <span class="type">string</span>) (Status, <span class="type">error</span>)</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 列出所有活动的写操作与状态信息，可通过 filters 提供的正则表达式来过滤列出项 </span></span><br><span class="line">	ListStatuses(ctx context.Context, filters ...<span class="type">string</span>) ([]Status, <span class="type">error</span>)</span><br><span class="line"></span><br><span class="line">	<span class="comment">// 取消操作</span></span><br><span class="line">	Abort(ctx context.Context, ref <span class="type">string</span>) <span class="type">error</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>Ingester 提供了 content 的存写接口，返回一个内容写入器对象 Writer </p>
+<p>content&#x2F;content.go:44</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> Ingester <span class="keyword">interface</span> &#123;</span><br><span class="line">	<span class="comment">//Writer opts 需带指定 ref 来唯一标识活动</span></span><br><span class="line">	Writer(ctx context.Context, opts ...WriterOpt) (Writer, <span class="type">error</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="Content-GRPC-注册与-Server-实现"><a href="#Content-GRPC-注册与-Server-实现" class="headerlink" title="Content GRPC 注册与 Server 实现"></a>Content GRPC 注册与 Server 实现</h2><p>content GRPC 插件注册，插件 InitFn 最后 contentserver.New(cs.(content.Store)) 返回  api.ContentServer，而GRPC 所依赖的服务插件 “content-service” 实例化对象作为其唯一传参,类型则是前面所详述的 content.Store 接口。</p>
+<p>services&#x2F;content&#x2F;service.go:27 </p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">init</span><span class="params">()</span></span> &#123;</span><br><span class="line">	plugin.Register(&amp;plugin.Registration&#123;</span><br><span class="line">		Type: plugin.GRPCPlugin,</span><br><span class="line">		ID:   <span class="string">&quot;content&quot;</span>,</span><br><span class="line">		Requires: []plugin.Type&#123;</span><br><span class="line">			plugin.ServicePlugin,</span><br><span class="line">		&#125;,</span><br><span class="line">		InitFn: <span class="function"><span class="keyword">func</span><span class="params">(ic *plugin.InitContext)</span></span> (<span class="keyword">interface</span>&#123;&#125;, <span class="type">error</span>) &#123;</span><br><span class="line">			plugins, err := ic.GetByType(plugin.ServicePlugin)  <span class="comment">//获取所有服务插件</span></span><br><span class="line">			<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">				<span class="keyword">return</span> <span class="literal">nil</span>, err</span><br><span class="line">			&#125;</span><br><span class="line">			p, ok := plugins[services.ContentService]  <span class="comment">// Key 为 &quot;content-service&quot; 服务插件</span></span><br><span class="line">			<span class="keyword">if</span> !ok &#123;</span><br><span class="line">				<span class="keyword">return</span> <span class="literal">nil</span>, errors.New(<span class="string">&quot;content store service not found&quot;</span>)</span><br><span class="line">			&#125;</span><br><span class="line">			cs, err := p.Instance()     <span class="comment">// &quot;content-service&quot; 插件实例化对象</span></span><br><span class="line">			<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">				<span class="keyword">return</span> <span class="literal">nil</span>, err</span><br><span class="line">			&#125;</span><br><span class="line">      <span class="comment">// 传参 cs.(content.Store) </span></span><br><span class="line">			<span class="keyword">return</span> contentserver.New(cs.(content.Store)), <span class="literal">nil</span></span><br><span class="line">		&#125;,</span><br><span class="line">	&#125;)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>ContentServer is the server API for Content service.</p>
+<p>api&#x2F;services&#x2F;content&#x2F;v1&#x2F;content.pb.go:1230</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> ContentServer <span class="keyword">interface</span> &#123;</span><br><span class="line">	Info(context.Context, *InfoRequest) (*InfoResponse, <span class="type">error</span>)</span><br><span class="line">	Update(context.Context, *UpdateRequest) (*UpdateResponse, <span class="type">error</span>)</span><br><span class="line">	List(*ListContentRequest, Content_ListServer) <span class="type">error</span></span><br><span class="line">	Delete(context.Context, *DeleteContentRequest) (*types.Empty, <span class="type">error</span>)</span><br><span class="line">	Read(*ReadContentRequest, Content_ReadServer) <span class="type">error</span></span><br><span class="line">	Status(context.Context, *StatusRequest) (*StatusResponse, <span class="type">error</span>)</span><br><span class="line">	ListStatuses(context.Context, *ListStatusesRequest) (*ListStatusesResponse, <span class="type">error</span>)</span><br><span class="line">	Write(Content_WriteServer) <span class="type">error</span></span><br><span class="line">	Abort(context.Context, *AbortRequest) (*types.Empty, <span class="type">error</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>New returns the content GRPC server</p>
+<p>services&#x2F;content&#x2F;contentserver&#x2F;contentserver.go:50</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">New</span><span class="params">(cs content.Store)</span></span> api.ContentServer &#123;</span><br><span class="line">	<span class="keyword">return</span> &amp;service&#123;store: cs&#125;   <span class="comment">// service</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>services&#x2F;content&#x2F;contentserver&#x2F;contentserver.go:38</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> service <span class="keyword">struct</span> &#123;</span><br><span class="line">	store content.Store          <span class="comment">// content.Store 接口类型</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>上层Content Server 包装的 service 类实现了 api.ContentServer 接口，其主要功能是底层所注册的 “content-service” 插件的服务方法，如下读取 Read() 实现方法逻辑则主要调用了底层的 store.ReaderAt() 来实现 content 读取。其它剩余的方法(Info、Update、List、Delete、Status、ListStatuses、WriteAbort、Abort)实现也类似将不再一一展开。</p>
+<p>services&#x2F;content&#x2F;contentserver&#x2F;contentserver.go:144</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(s *service)</span></span> Read(req *api.ReadContentRequest, session api.Content_ReadServer) <span class="type">error</span> &#123;</span><br><span class="line">	<span class="keyword">if</span> err := req.Digest.Validate(); err != <span class="literal">nil</span> &#123;</span><br><span class="line">		<span class="keyword">return</span> status.Errorf(codes.InvalidArgument, <span class="string">&quot;%v: %v&quot;</span>, req.Digest, err)</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 调用底层服务方法 s.store.Info()</span></span><br><span class="line">	oi, err := s.store.Info(session.Context(), req.Digest)</span><br><span class="line">	<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">		<span class="keyword">return</span> errdefs.ToGRPC(err)</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 调用底层服务方法 s.store.ReaderAt() </span></span><br><span class="line">	ra, err := s.store.ReaderAt(session.Context(), ocispec.Descriptor&#123;Digest: req.Digest&#125;)</span><br><span class="line">	<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">		<span class="keyword">return</span> errdefs.ToGRPC(err)</span><br><span class="line">	&#125;</span><br><span class="line">  <span class="comment">//...</span></span><br><span class="line"></span><br><span class="line">	<span class="keyword">return</span> errdefs.ToGRPC(err)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="Content-service-服务注册与实现"><a href="#Content-service-服务注册与实现" class="headerlink" title="Content service 服务注册与实现"></a>Content service 服务注册与实现</h2><p>注册</p>
+<p>services&#x2F;content&#x2F;store.go:37 </p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">init</span><span class="params">()</span></span> &#123;</span><br><span class="line">	plugin.Register(&amp;plugin.Registration&#123;</span><br><span class="line">		Type: plugin.ServicePlugin,            <span class="comment">// 服务插件类型</span></span><br><span class="line">		ID:   services.ContentService,         <span class="comment">// ID 为&quot;content-service&quot;</span></span><br><span class="line">		Requires: []plugin.Type&#123;</span><br><span class="line">			plugin.MetadataPlugin,               <span class="comment">// 依赖元数据插件</span></span><br><span class="line">		&#125;,</span><br><span class="line">		InitFn: <span class="function"><span class="keyword">func</span><span class="params">(ic *plugin.InitContext)</span></span> (<span class="keyword">interface</span>&#123;&#125;, <span class="type">error</span>) &#123;</span><br><span class="line">			m, err := ic.Get(plugin.MetadataPlugin)  <span class="comment">//获取元数据库注册的插件初始化对象</span></span><br><span class="line">			<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">				<span class="keyword">return</span> <span class="literal">nil</span>, err</span><br><span class="line">			&#125;</span><br><span class="line">      <span class="comment">// +创建 content.Store 实例对象，其输入的参数为重点关注 </span></span><br><span class="line">      <span class="comment">// +m.(metadata.DB).ContentStore() 为元数据库指定的内容存储对象（后面详述）</span></span><br><span class="line">			s, err := newContentStore(m.(*metadata.DB).ContentStore(), ic.Events)</span><br><span class="line">			<span class="keyword">return</span> s, err</span><br><span class="line">		&#125;,</span><br><span class="line">	&#125;)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>services&#x2F;content&#x2F;store.go:56</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">newContentStore</span><span class="params">(cs content.Store, publisher events.Publisher)</span></span> (content.Store, <span class="type">error</span>) &#123;</span><br><span class="line">	<span class="keyword">return</span> &amp;store&#123;</span><br><span class="line">		Store:     cs,              <span class="comment">// 内容存储对象</span></span><br><span class="line">		publisher: publisher,</span><br><span class="line">	&#125;, <span class="literal">nil</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>store 类结构定义，实际上包装了 content.Store 增加事件的推送</p>
+<p>services&#x2F;content&#x2F;store.go:32</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> store <span class="keyword">struct</span> &#123;</span><br><span class="line">	content.Store</span><br><span class="line">	publisher events.Publisher</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="元数据库及内容存储库"><a href="#元数据库及内容存储库" class="headerlink" title="元数据库及内容存储库"></a>元数据库及内容存储库</h2><p>MetadataPlugin 元数据库在 containerd server 创建过程中对所有插件进行加载时被指定，同时指定了内容存储和snapshotter 实现类对象</p>
+<p>services&#x2F;server&#x2F;server.go:304</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">LoadPlugins</span><span class="params">(ctx context.Context, config *srvconfig.Config)</span></span> ([]*plugin.Registration, <span class="type">error</span>) &#123;</span><br><span class="line">	<span class="comment">// load all plugins into containerd</span></span><br><span class="line">	plugin.Register(</span><br><span class="line">    <span class="comment">//...</span></span><br><span class="line">  plugin.Register(&amp;plugin.Registration&#123;</span><br><span class="line">		Type: plugin.ContentPlugin,             <span class="comment">// 内容插件类型</span></span><br><span class="line">		ID:   <span class="string">&quot;content&quot;</span>,</span><br><span class="line">		InitFn: <span class="function"><span class="keyword">func</span><span class="params">(ic *plugin.InitContext)</span></span> (<span class="keyword">interface</span>&#123;&#125;, <span class="type">error</span>) &#123;</span><br><span class="line">			ic.Meta.Exports[<span class="string">&quot;root&quot;</span>] = ic.Root</span><br><span class="line">			<span class="keyword">return</span> local.NewStore(ic.Root)       <span class="comment">// 插件初始化func,创建与返回内容存储实例化对象</span></span><br><span class="line">		&#125;,</span><br><span class="line">	&#125;)</span><br><span class="line">    </span><br><span class="line"><span class="comment">//...</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<p>NewStore 本地内容存储构建，实际调用 NewLabeledStore ，返回 content.Store 接口实现类对象 store{root, ls}</p>
+<p>content&#x2F;local&#x2F;store.go:74</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// NewStore returns a local content store</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">NewStore</span><span class="params">(root <span class="type">string</span>)</span></span> (content.Store, <span class="type">error</span>) &#123;</span><br><span class="line">	<span class="keyword">return</span> NewLabeledStore(root, <span class="literal">nil</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">NewLabeledStore</span><span class="params">(root <span class="type">string</span>, ls LabelStore)</span></span> (content.Store, <span class="type">error</span>) &#123;</span><br><span class="line">	<span class="keyword">if</span> err := os.MkdirAll(filepath.Join(root, <span class="string">&quot;ingest&quot;</span>), <span class="number">0777</span>); err != <span class="literal">nil</span> &#123;</span><br><span class="line">		<span class="keyword">return</span> <span class="literal">nil</span>, err</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">return</span> &amp;store&#123;</span><br><span class="line">		root: root,</span><br><span class="line">		ls:   ls,</span><br><span class="line">	&#125;, <span class="literal">nil</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>下面我们将重点分析  content store 的实现类方法逻辑，本文主要分析 Writer 和 ReaderAt 两个方法，其它的方法可以查看源码。</p>
+<p>store.Writer()  返回一个配置好的内容 writer 对象可供内容数据的写入</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// `ref` 参数用于为写事务生命周期管理的唯一标识，必须指定 ref</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(s *store)</span></span> Writer(ctx context.Context, opts ...content.WriterOpt) (content.Writer, <span class="type">error</span>) &#123;</span><br><span class="line">	<span class="keyword">var</span> wOpts content.WriterOpts</span><br><span class="line">  <span class="comment">// 加载 writer 配置选项</span></span><br><span class="line">	<span class="keyword">for</span> _, opt := <span class="keyword">range</span> opts &#123;</span><br><span class="line">		<span class="keyword">if</span> err := opt(&amp;wOpts); err != <span class="literal">nil</span> &#123;</span><br><span class="line">			<span class="keyword">return</span> <span class="literal">nil</span>, err</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// ref 配置选项检查不能为空</span></span><br><span class="line">	<span class="keyword">if</span> wOpts.Ref == <span class="string">&quot;&quot;</span> &#123;</span><br><span class="line">		<span class="keyword">return</span> <span class="literal">nil</span>, errors.Wrap(errdefs.ErrInvalidArgument, <span class="string">&quot;ref must not be empty&quot;</span>)</span><br><span class="line">	&#125;</span><br><span class="line">  </span><br><span class="line">  <span class="comment">//...</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">// +实标调用 writer()方法（下面详述）</span></span><br><span class="line">	w, err := s.writer(ctx, wOpts.Ref, wOpts.Desc.Size, wOpts.Desc.Digest)</span><br><span class="line">	<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">		unlock(wOpts.Ref)</span><br><span class="line">		<span class="keyword">return</span> <span class="literal">nil</span>, err</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">return</span> w, <span class="literal">nil</span> <span class="comment">// lock is now held by w.</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>content&#x2F;local&#x2F;store.go:511</p>
+<p><code>ingest下的文档是为了实现下写入中断状态可恢复状态，但写入完成后将会清空相关数据文件</code></p>
+<p>ingestPaths 基于 ref 定义生成数据处理的路径：<br>     path 为整个 ingest 的目录路径 $root&#x2F;ingest&#x2F;$digest(ref)&#x2F;<br>     refp  以 ref 为名文件路径 $root&#x2F;ingest&#x2F;$digest(ref)&#x2F;ref<br>    data 数据文件路径 $root&#x2F;ingest&#x2F;$digest(ref)&#x2F;data</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">sample</span></span><br><span class="line">└── ingest</span><br><span class="line">    ├── 118362824418aca5274ffbd3a62eee91928022733f211c065e6b49bc280fc41c</span><br><span class="line">    │   ├── data</span><br><span class="line">    │   ├── ref</span><br><span class="line">    │   ├── startedat</span><br><span class="line">    │   ├── total</span><br><span class="line">    │   └── updatedat</span><br><span class="line">    └── 13a2d9c8635a9337aeda0bf3bb80d70b229d7fe19e41c750a28243008879de55</span><br><span class="line">        ├── data</span><br><span class="line">        ├── ref</span><br><span class="line">        ├── startedat</span><br><span class="line">        ├── total</span><br><span class="line">        └── updatedat</span><br></pre></td></tr></table></figure>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(s *store)</span></span> writer(ctx context.Context, ref <span class="type">string</span>, total <span class="type">int64</span>, expected digest.Digest) (content.Writer, <span class="type">error</span>) &#123;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span> expected != <span class="string">&quot;&quot;</span> &#123;</span><br><span class="line">    <span class="comment">// 通过摘要散列值生成 blob 文件对象路径</span></span><br><span class="line">		p := s.blobPath(expected)</span><br><span class="line">		<span class="keyword">if</span> _, err := os.Stat(p); err == <span class="literal">nil</span> &#123;</span><br><span class="line">			<span class="keyword">return</span> <span class="literal">nil</span>, errors.Wrapf(errdefs.ErrAlreadyExists, <span class="string">&quot;content %v&quot;</span>, expected)</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">  </span><br><span class="line">  <span class="comment">// 基于 ref 定义生成数据处理的路径，返回三个路径：</span></span><br><span class="line">  <span class="comment">// path 为整个 ingest 的目录路径 $root/ingest/$digest(ref)/</span></span><br><span class="line">  <span class="comment">// refp  以 ref 为名文件路径 $root/ingest/$digest(ref)/ref</span></span><br><span class="line">  <span class="comment">// data 数据文件路径 $root/ingest/$digest(ref)/data</span></span><br><span class="line">  </span><br><span class="line">	path, refp, data := s.ingestPaths(ref)</span><br><span class="line"></span><br><span class="line">	<span class="keyword">var</span> (</span><br><span class="line">		digester  = digest.Canonical.Digester()</span><br><span class="line">		offset    <span class="type">int64</span></span><br><span class="line">		startedAt time.Time</span><br><span class="line">		updatedAt time.Time</span><br><span class="line">	)</span><br><span class="line"></span><br><span class="line">	foundValidIngest := <span class="literal">false</span></span><br><span class="line">  <span class="comment">// 确保 ingest 目录被创建</span></span><br><span class="line">	<span class="keyword">if</span> err := os.Mkdir(path, <span class="number">0755</span>); err != <span class="literal">nil</span> &#123;</span><br><span class="line">		<span class="keyword">if</span> !os.IsExist(err) &#123;</span><br><span class="line">			<span class="keyword">return</span> <span class="literal">nil</span>, err</span><br><span class="line">		&#125;</span><br><span class="line">    <span class="comment">// 获取原 ref 及数据状态信息</span></span><br><span class="line">		status, err := s.resumeStatus(ref, total, digester)</span><br><span class="line">		<span class="keyword">if</span> err == <span class="literal">nil</span> &#123;</span><br><span class="line">			foundValidIngest = <span class="literal">true</span></span><br><span class="line">			updatedAt = status.UpdatedAt</span><br><span class="line">			startedAt = status.StartedAt</span><br><span class="line">			total = status.Total</span><br><span class="line">			offset = status.Offset</span><br><span class="line">		&#125; <span class="keyword">else</span> &#123;   </span><br><span class="line">			logrus.Infof(<span class="string">&quot;failed to resume the status from path %s: %s. will recreate them&quot;</span>, path, err.Error())</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">  </span><br><span class="line">  <span class="comment">// 如果不存在则创建相关文件</span></span><br><span class="line">	<span class="keyword">if</span> !foundValidIngest &#123;</span><br><span class="line">		startedAt = time.Now()</span><br><span class="line">		updatedAt = startedAt</span><br><span class="line"></span><br><span class="line">		<span class="comment">// ref 文件写入内容为 ref 指定的字符串信息</span></span><br><span class="line">		<span class="keyword">if</span> err := ioutil.WriteFile(refp, []<span class="type">byte</span>(ref), <span class="number">0666</span>); err != <span class="literal">nil</span> &#123;</span><br><span class="line">			<span class="keyword">return</span> <span class="literal">nil</span>, err</span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 开始时间</span></span><br><span class="line">		<span class="keyword">if</span> err := writeTimestampFile(filepath.Join(path, <span class="string">&quot;startedat&quot;</span>), startedAt); err != <span class="literal">nil</span> &#123;</span><br><span class="line">			<span class="keyword">return</span> <span class="literal">nil</span>, err</span><br><span class="line">		&#125;</span><br><span class="line">    <span class="comment">// 更新时间</span></span><br><span class="line">		<span class="keyword">if</span> err := writeTimestampFile(filepath.Join(path, <span class="string">&quot;updatedat&quot;</span>), startedAt); err != <span class="literal">nil</span> &#123;</span><br><span class="line">			<span class="keyword">return</span> <span class="literal">nil</span>, err</span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 大小</span></span><br><span class="line">		<span class="keyword">if</span> total &gt; <span class="number">0</span> &#123;</span><br><span class="line">			<span class="keyword">if</span> err := ioutil.WriteFile(filepath.Join(path, <span class="string">&quot;total&quot;</span>), []<span class="type">byte</span>(fmt.Sprint(total)), <span class="number">0666</span>); err != <span class="literal">nil</span> &#123;</span><br><span class="line">				<span class="keyword">return</span> <span class="literal">nil</span>, err</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">  </span><br><span class="line">  <span class="comment">// 打开数据文件句柄</span></span><br><span class="line">	fp, err := os.OpenFile(data, os.O_WRONLY|os.O_CREATE, <span class="number">0666</span>)</span><br><span class="line">	<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">		<span class="keyword">return</span> <span class="literal">nil</span>, errors.Wrap(err, <span class="string">&quot;failed to open data file&quot;</span>)</span><br><span class="line">	&#125;</span><br><span class="line"> </span><br><span class="line">  <span class="comment">// 定位偏移位置</span></span><br><span class="line">	<span class="keyword">if</span> _, err := fp.Seek(offset, io.SeekStart); err != <span class="literal">nil</span> &#123;</span><br><span class="line">		<span class="keyword">return</span> <span class="literal">nil</span>, errors.Wrap(err, <span class="string">&quot;could not seek to current write offset&quot;</span>)</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 最后返回一个 writer 对象</span></span><br><span class="line">	<span class="keyword">return</span> &amp;writer&#123;</span><br><span class="line">		s:         s,</span><br><span class="line">		fp:        fp,</span><br><span class="line">		ref:       ref,</span><br><span class="line">		path:      path,</span><br><span class="line">		offset:    offset,</span><br><span class="line">		total:     total,</span><br><span class="line">		digester:  digester,</span><br><span class="line">		startedAt: startedAt,</span><br><span class="line">		updatedAt: updatedAt,</span><br><span class="line">	&#125;, <span class="literal">nil</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>content&#x2F;local&#x2F;store.go:480</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(s *store)</span></span> resumeStatus(ref <span class="type">string</span>, total <span class="type">int64</span>, digester digest.Digester) (content.Status, <span class="type">error</span>) &#123;</span><br><span class="line">	path, _, data := s.ingestPaths(ref)   <span class="comment">// 基于 ref 定义生成数据处理的路径</span></span><br><span class="line">	status, err := s.status(path)         <span class="comment">// 获取 ingest 目录的元状态信息</span></span><br><span class="line">	<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">		<span class="keyword">return</span> status, errors.Wrap(err, <span class="string">&quot;failed reading status of resume write&quot;</span>)</span><br><span class="line">	&#125;</span><br><span class="line">  <span class="comment">// ref 值与 ingest 目录下检验是否一致</span></span><br><span class="line">	<span class="keyword">if</span> ref != status.Ref &#123;</span><br><span class="line">		<span class="keyword">return</span> status, errors.Wrapf(err, <span class="string">&quot;ref key does not match: %v != %v&quot;</span>, ref, status.Ref)</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 大小检验</span></span><br><span class="line">	<span class="keyword">if</span> total &gt; <span class="number">0</span> &amp;&amp; status.Total &gt; <span class="number">0</span> &amp;&amp; total != status.Total &#123;</span><br><span class="line">		<span class="keyword">return</span> status, errors.Errorf(<span class="string">&quot;provided total differs from status: %v != %v&quot;</span>, total, status.Total)</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// 打开 blob 数据文件句柄</span></span><br><span class="line">	fp, err := os.Open(data)</span><br><span class="line">	<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">		<span class="keyword">return</span> status, err</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	p := bufPool.Get().(*[]<span class="type">byte</span>)</span><br><span class="line">	status.Offset, err = io.CopyBuffer(digester.Hash(), fp, *p)</span><br><span class="line">	bufPool.Put(p)</span><br><span class="line">	fp.Close()</span><br><span class="line">	<span class="keyword">return</span> status, err   <span class="comment">//返回状态信息</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<p>store ReaderAt 返回  blob  的 io.ReaderAt ，其代码实现为标准的文件打开句柄加上文件大小。 ocispec.Descriptor OCI 标准格式描述符指定了需要读取的文件 blob 内容摘要散列值，通过在路径 $root&#x2F;blobs&#x2F;$digest 查找文件。 </p>
+<p>content&#x2F;local&#x2F;store.go:125</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// ReaderAt returns an io.ReaderAt for the blob.</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(s *store)</span></span> ReaderAt(ctx context.Context, desc ocispec.Descriptor) (content.ReaderAt, <span class="type">error</span>) &#123;</span><br><span class="line">	p := s.blobPath(desc.Digest)     <span class="comment">// 通过指定的摘要散列值生成 blob 文件对象路径</span></span><br><span class="line">	fi, err := os.Stat(p)</span><br><span class="line">	<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">		<span class="keyword">if</span> !os.IsNotExist(err) &#123;</span><br><span class="line">			<span class="keyword">return</span> <span class="literal">nil</span>, err</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">return</span> <span class="literal">nil</span>, errors.Wrapf(errdefs.ErrNotFound, <span class="string">&quot;blob %s expected at %s&quot;</span>, desc.Digest, p)</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	fp, err := os.Open(p)           <span class="comment">// 打开文件获取文件句柄</span></span><br><span class="line">	<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">		<span class="keyword">if</span> !os.IsNotExist(err) &#123;</span><br><span class="line">			<span class="keyword">return</span> <span class="literal">nil</span>, err</span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">		<span class="keyword">return</span> <span class="literal">nil</span>, errors.Wrapf(errdefs.ErrNotFound, <span class="string">&quot;blob %s expected at %s&quot;</span>, desc.Digest, p)</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">return</span> sizeReaderAt&#123;size: fi.Size(), fp: fp&#125;, <span class="literal">nil</span>  </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>其它剩余的 content store 方法(Info、Update、List、Delete、Status、ListStatuses、WriteAbort、Abort)实现也类似,将不再一一展开。</p>
+<h2 id="附录"><a href="#附录" class="headerlink" title="附录"></a>附录</h2><p><strong>ctr content 命令</strong></p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br></pre></td><td class="code"><pre><span class="line">Name:        &quot;get&quot;,</span><br><span class="line">Usage:       &quot;get the data for an object&quot;,</span><br><span class="line">ArgsUsage:   &quot;[&lt;digest&gt;, ...]&quot;,</span><br><span class="line">Description: &quot;display the image object&quot;,</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">Name:        &quot;ingest&quot;,</span><br><span class="line">Usage:       &quot;accept content into the store&quot;,</span><br><span class="line">ArgsUsage:   &quot;[flags] &lt;key&gt;&quot;,</span><br><span class="line">Description: &quot;ingest objects into the local content store&quot;,</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">Name:        &quot;active&quot;,</span><br><span class="line">Usage:       &quot;display active transfers&quot;,</span><br><span class="line">ArgsUsage:   &quot;[flags] [&lt;regexp&gt;]&quot;,</span><br><span class="line">Description: &quot;display the ongoing transfers&quot;,</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">Name:        &quot;list&quot;,</span><br><span class="line">Aliases:     []string&#123;&quot;ls&quot;&#125;,</span><br><span class="line">Usage:       &quot;list all blobs in the store&quot;,</span><br><span class="line">ArgsUsage:   &quot;[flags]&quot;,</span><br><span class="line">Description: &quot;list blobs in the content store&quot;,</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">Name:        &quot;label&quot;,</span><br><span class="line">Usage:       &quot;add labels to content&quot;,</span><br><span class="line">ArgsUsage:   &quot;&lt;digest&gt; [&lt;label&gt;=&lt;value&gt; ...]&quot;,</span><br><span class="line">Description: &quot;labels blobs in the content store&quot;,</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">Name:        &quot;edit&quot;,</span><br><span class="line">Usage:       &quot;edit a blob and return a new digest&quot;,</span><br><span class="line">ArgsUsage:   &quot;[flags] &lt;digest&gt;&quot;,</span><br><span class="line">Description: &quot;edit a blob and return a new digest&quot;,</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">Name:      &quot;delete&quot;,</span><br><span class="line">Aliases:   []string&#123;&quot;del&quot;, &quot;remove&quot;, &quot;rm&quot;&#125;,</span><br><span class="line">Usage:     &quot;permanently delete one or more blobs&quot;,</span><br><span class="line">ArgsUsage: &quot;[&lt;digest&gt;, ...]&quot;,</span><br><span class="line">Description: `Delete one or more blobs permanently. Successfully deleted</span><br><span class="line">blobs are printed to stdout.`,</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">Name:        &quot;fetch-object&quot;,</span><br><span class="line">Usage:       &quot;retrieve objects from a remote&quot;,</span><br><span class="line">ArgsUsage:   &quot;[flags] &lt;remote&gt; &lt;object&gt; [&lt;hint&gt;, ...]&quot;,</span><br><span class="line">Description: `Fetch objects by identifier from a remote.`,</span><br><span class="line">Flags:       commands.RegistryFlags,</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">Name:        &quot;push-object&quot;,</span><br><span class="line">Usage:       &quot;push an object to a remote&quot;,</span><br><span class="line">ArgsUsage:   &quot;[flags] &lt;remote&gt; &lt;object&gt; &lt;type&gt;&quot;,</span><br><span class="line">Description: `Push objects by identifier to a remote.`,</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">Name:      &quot;fetch&quot;,</span><br><span class="line">Usage:     &quot;fetch all content for an image into containerd&quot;,</span><br><span class="line">ArgsUsage: &quot;[flags] &lt;remote&gt; &lt;object&gt;&quot;,</span><br><span class="line">Description: `Fetch an image into containerd.</span><br></pre></td></tr></table></figure>
+
+
+
+<p>~~ <strong>本文 END</strong> ~~</p>
+
+
+<div class="article-footer reveal fs14"><section id="license"><div class="header"><span>许可协议</span></div><div class="body"><p>本文采用 <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">署名-非商业性使用-相同方式共享 4.0 国际</a> 许可协议，转载请注明出处。</p>
+</div></section></div>
+
+</article>
+
+<div class="related-wrap reveal" id="read-next"><section class="body"><div class="item" id="prev"><div class="note">较新文章</div><a href="/2023/01/16/Containerd_Image/">Containerd Image 服务</a></div><div class="item" id="next"><div class="note">较早文章</div><a href="/2023/01/16/Containerd_Diff/">Containerd Diff 服务</a></div></section></div>
+
+
+
+
+
+
+  <div class='related-wrap md-text reveal' id="comments">
+    <section class='header cmt-title cap theme'>
+      快来参与讨论吧
+    </section>
+    <section class='body cmt-body artalk'>
+      
+
+<div id="artalk_container"><svg class="loading" style="vertical-align: middle;fill: currentColor;overflow: hidden;" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="2709"><path d="M832 512c0-176-144-320-320-320V128c211.2 0 384 172.8 384 384h-64zM192 512c0 176 144 320 320 320v64C300.8 896 128 723.2 128 512h64z" p-id="2710"></path></svg></div>
+    </section>
+  </div>
+
+
+
+      
+<footer class="page-footer reveal fs12"><hr><div class="text"><p>个人技术分享 |  经验总结 |  技术实践  |  心情<br>XiaoYang   <a href="mailto:&#x73;&#117;&#x70;&#101;&#x72;&#115;&#112;&#106;&#106;&#x40;&#49;&#54;&#51;&#46;&#99;&#111;&#x6d;">&#x73;&#117;&#x70;&#101;&#x72;&#115;&#112;&#106;&#106;&#x40;&#49;&#54;&#51;&#46;&#99;&#111;&#x6d;</a>          </p>
+</div></footer>
+
+      <div class='float-panel mobile-only blur' style='display:none'>
+  <button type='button' class='sidebar-toggle mobile' onclick='sidebar.toggle()'>
+    <svg class="icon" style="width: 1em; height: 1em;vertical-align: middle;fill: currentColor;overflow: hidden;" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="15301"><path d="M566.407 808.3c26.9-0.1 49.3-20.8 51.6-47.6-1.9-27.7-23.9-49.7-51.6-51.6h-412.6c-28.2-1.4-52.6 19.5-55.5 47.6 2.3 26.8 24.6 47.5 51.6 47.6h416.5v4z m309.3-249.9c26.9-0.1 49.3-20.8 51.6-47.6-2.2-26.8-24.6-47.5-51.6-47.6h-721.9c-27.7-2.8-52.5 17.4-55.3 45.1-0.1 0.8-0.1 1.7-0.2 2.5 0.9 27.2 23.6 48.5 50.7 47.6H875.707z m-103.1-245.9c26.9-0.1 49.3-20.8 51.6-47.6-0.4-28.3-23.2-51.1-51.5-51.6h-618.9c-29.5-1.1-54.3 21.9-55.5 51.4v0.2c1.4 27.8 25.2 49.2 53 47.8 0.8 0 1.7-0.1 2.5-0.2h618.8z" p-id="15302"></path><path d="M566.407 808.3c26.9-0.1 49.3-20.8 51.6-47.6-1.9-27.7-23.9-49.7-51.6-51.6h-412.6c-28.2-1.4-52.6 19.5-55.5 47.6 1.9 27.7 23.9 49.7 51.6 51.6h416.5z m309.3-249.9c26.9-0.1 49.3-20.8 51.6-47.6-2.2-26.8-24.6-47.5-51.6-47.6h-721.9c-27.7-2.8-52.5 17.4-55.3 45.1-0.1 0.8-0.1 1.7-0.2 2.5 0.9 27.2 23.6 48.5 50.7 47.6H875.707z m-103.1-245.9c26.9-0.1 49.3-20.8 51.6-47.6-0.4-28.3-23.2-51.1-51.5-51.6h-618.9c-29.5-1.1-54.3 21.9-55.5 51.4v0.2c1.4 27.8 25.2 49.2 53 47.8 0.8 0 1.7-0.1 2.5-0.2h618.8z" p-id="15303"></path></svg>
+  </button>
+</div>
+
+    </div>
+  </div>
+  <div class='scripts'>
+    <script type="text/javascript">
+  const stellar = {
+    // 懒加载 css https://github.com/filamentgroup/loadCSS
+    loadCSS: (href, before, media, attributes) => {
+      var doc = window.document;
+      var ss = doc.createElement("link");
+      var ref;
+      if (before) {
+        ref = before;
+      } else {
+        var refs = (doc.body || doc.getElementsByTagName("head")[0]).childNodes;
+        ref = refs[refs.length - 1];
+      }
+      var sheets = doc.styleSheets;
+      if (attributes) {
+        for (var attributeName in attributes) {
+          if (attributes.hasOwnProperty(attributeName)) {
+            ss.setAttribute(attributeName, attributes[attributeName]);
+          }
+        }
+      }
+      ss.rel = "stylesheet";
+      ss.href = href;
+      ss.media = "only x";
+      function ready(cb) {
+        if (doc.body) {
+          return cb();
+        }
+        setTimeout(function () {
+          ready(cb);
+        });
+      }
+      ready(function () {
+        ref.parentNode.insertBefore(ss, before ? ref : ref.nextSibling);
+      });
+      var onloadcssdefined = function (cb) {
+        var resolvedHref = ss.href;
+        var i = sheets.length;
+        while (i--) {
+          if (sheets[i].href === resolvedHref) {
+            return cb();
+          }
+        }
+        setTimeout(function () {
+          onloadcssdefined(cb);
+        });
+      };
+      function loadCB() {
+        if (ss.addEventListener) {
+          ss.removeEventListener("load", loadCB);
+        }
+        ss.media = media || "all";
+      }
+      if (ss.addEventListener) {
+        ss.addEventListener("load", loadCB);
+      }
+      ss.onloadcssdefined = onloadcssdefined;
+      onloadcssdefined(loadCB);
+      return ss;
+    },
+
+    // 从 butterfly 和 volantis 获得灵感
+    loadScript: (src, opt) => new Promise((resolve, reject) => {
+      var script = document.createElement('script');
+      script.src = src;
+      if (opt) {
+        for (let key of Object.keys(opt)) {
+          script[key] = opt[key]
+        }
+      } else {
+        // 默认异步，如果需要同步，第二个参数传入 {} 即可
+        script.async = true
+      }
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    }),
+
+    // https://github.com/jerryc127/hexo-theme-butterfly
+    jQuery: (fn) => {
+      if (typeof jQuery === 'undefined') {
+        stellar.loadScript(stellar.plugins.jQuery).then(fn)
+      } else {
+        fn()
+      }
+    }
+  };
+  stellar.version = '1.18.5';
+  stellar.github = 'https://github.com/xaoxuu/hexo-theme-stellar/tree/1.18.5';
+  stellar.config = {
+    date_suffix: {
+      just: '刚刚',
+      min: '分钟前',
+      hour: '小时前',
+      day: '天前',
+      month: '个月前',
+    },
+  };
+
+  // required plugins (only load if needs)
+  stellar.plugins = {
+    jQuery: 'https://gcore.jsdelivr.net/npm/jquery@3.6.2/dist/jquery.min.js'
+  };
+
+  if ('local_search') {
+    stellar.search = {};
+    stellar.search.service = 'local_search';
+    if (stellar.search.service == 'local_search') {
+      let service_obj = Object.assign({}, {"field":"all","path":"/search.json","content":true,"sort":"-date"});
+      stellar.search[stellar.search.service] = service_obj;
+    }
+  }
+
+  // stellar js
+  stellar.plugins.stellar = Object.assign({"sites":"/js/plugins/sites.js","friends":"/js/plugins/friends.js","ghinfo":"/js/plugins/ghinfo.js","timeline":"/js/plugins/timeline.js","linkcard":"/js/plugins/linkcard.js","fcircle":"/js/plugins/fcircle.js","weibo":"/js/plugins/weibo.js"});
+
+  stellar.plugins.marked = Object.assign("https://cdn.bootcdn.net/ajax/libs/marked/4.0.18/marked.min.js");
+  // optional plugins
+  if ('true' == 'true') {
+    stellar.plugins.lazyload = Object.assign({"enable":true,"js":"https://gcore.jsdelivr.net/npm/vanilla-lazyload@17.8.3/dist/lazyload.min.js","transition":"blur"});
+  }
+  if ('true' == 'true') {
+    stellar.plugins.swiper = Object.assign({"enable":true,"css":"https://unpkg.com/swiper@8.4.5/swiper-bundle.min.css","js":"https://unpkg.com/swiper@8.4.5/swiper-bundle.min.js"});
+  }
+  if ('' == 'true') {
+    stellar.plugins.scrollreveal = Object.assign({"enable":null,"js":"https://gcore.jsdelivr.net/npm/scrollreveal@4.0.9/dist/scrollreveal.min.js","distance":"8px","duration":500,"interval":100,"scale":1});
+  }
+  if ('true' == 'true') {
+    stellar.plugins.preload = Object.assign({"enable":true,"service":"flying_pages","instant_page":"https://gcore.jsdelivr.net/gh/volantis-x/cdn-volantis@4.1.2/js/instant_page.js","flying_pages":"https://gcore.jsdelivr.net/gh/gijo-varghese/flying-pages@2.1.2/flying-pages.min.js"});
+  }
+  if ('true' == 'true') {
+    stellar.plugins.fancybox = Object.assign({"enable":true,"js":"https://gcore.jsdelivr.net/npm/@fancyapps/ui@4.0/dist/fancybox.umd.js","css":"https://gcore.jsdelivr.net/npm/@fancyapps/ui@4.0/dist/fancybox.css","selector":".swiper-slide img"});
+  }
+  if ('false' == 'true') {
+    stellar.plugins.heti = Object.assign({"enable":false,"css":"https://unpkg.com/heti@0.9.2/umd/heti.min.css","js":"https://unpkg.com/heti@0.9.2/umd/heti-addon.min.js"});
+  }
+</script>
+
+<!-- required -->
+
+  
+<script src="/js/main.js" async></script>
+
+
+
+<!-- optional -->
+
+  <script>
+  function load_artalk() {
+    if (!document.querySelectorAll("#artalk_container")[0]) return;
+    stellar.loadCSS('https://unpkg.com/artalk@2.4.3/dist/Artalk.css');
+    stellar.loadScript('https://unpkg.com/artalk@2.4.3/dist/Artalk.js', {defer: true}).then(function () {
+      const el = document.getElementById("artalk_container");
+      var path = el.getAttribute('comment_id');
+      if (!path) {
+        path = decodeURI(window.location.pathname);
+      }
+      var artalk = new Artalk({
+        el: '#artalk_container',
+        pageKey: path,
+        pageTitle: 'Containerd Content 服务',
+        server: '',
+        placeholder: '',
+        site: '知识库',
+        darkMode: 'auto'
+        })
+      });
+  }
+  window.addEventListener('DOMContentLoaded', (event) => {
+    load_artalk();
+  });
+</script>
+
+
+
+<!-- inject -->
+
+
+  </div>
+</body>
+</html>
