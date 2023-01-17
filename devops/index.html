@@ -99,21 +99,10 @@
 <div class="bread-nav fs12"><div id="breadcrumb"><a class="cap breadcrumb" href="/">主页</a><span class="sep"></span><a class="cap breadcrumb" href="/devops/index.html">devops</a></div></div>
 <article class="md-text content page"><h1 class="article-title"><span>devops</span></h1></article>
 
-  <div class='related-wrap md-text reveal' id="comments">
-    <section class='header cmt-title cap theme'>
-      快来参与讨论吧
-    </section>
-    <section class='body cmt-body artalk'>
-      
-
-<div id="artalk_container"><svg class="loading" style="vertical-align: middle;fill: currentColor;overflow: hidden;" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="2709"><path d="M832 512c0-176-144-320-320-320V128c211.2 0 384 172.8 384 384h-64zM192 512c0 176 144 320 320 320v64C300.8 896 128 723.2 128 512h64z" p-id="2710"></path></svg></div>
-    </section>
-  </div>
-
 
 
       
-<footer class="page-footer reveal fs12"><hr><div class="text"><p>个人技术分享 |  经验总结 |  技术实践  |  心情<br>XiaoYang   <a href="mailto:&#x73;&#x75;&#112;&#101;&#x72;&#115;&#x70;&#106;&#x6a;&#64;&#49;&#x36;&#51;&#46;&#99;&#111;&#x6d;">&#x73;&#x75;&#112;&#101;&#x72;&#115;&#x70;&#106;&#x6a;&#64;&#49;&#x36;&#51;&#46;&#99;&#111;&#x6d;</a>          </p>
+<footer class="page-footer reveal fs12"><hr><div class="text"><p>个人技术分享 |  经验总结 |  技术实践  |  心情<br>XiaoYang   <a href="mailto:&#x73;&#117;&#x70;&#101;&#114;&#115;&#112;&#x6a;&#x6a;&#x40;&#49;&#54;&#51;&#46;&#99;&#111;&#x6d;">&#x73;&#117;&#x70;&#101;&#114;&#115;&#112;&#x6a;&#x6a;&#x40;&#49;&#54;&#51;&#46;&#99;&#111;&#x6d;</a>          </p>
 </div></footer>
 
       <div class='float-panel mobile-only blur' style='display:none'>
@@ -276,32 +265,6 @@
 
 
 <!-- optional -->
-
-  <script>
-  function load_artalk() {
-    if (!document.querySelectorAll("#artalk_container")[0]) return;
-    stellar.loadCSS('https://unpkg.com/artalk@2.4.3/dist/Artalk.css');
-    stellar.loadScript('https://unpkg.com/artalk@2.4.3/dist/Artalk.js', {defer: true}).then(function () {
-      const el = document.getElementById("artalk_container");
-      var path = el.getAttribute('comment_id');
-      if (!path) {
-        path = decodeURI(window.location.pathname);
-      }
-      var artalk = new Artalk({
-        el: '#artalk_container',
-        pageKey: path,
-        pageTitle: 'devops',
-        server: '',
-        placeholder: '',
-        site: '知识库',
-        darkMode: 'auto'
-        })
-      });
-  }
-  window.addEventListener('DOMContentLoaded', (event) => {
-    load_artalk();
-  });
-</script>
 
 
 
